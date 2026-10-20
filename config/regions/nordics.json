@@ -1,0 +1,39 @@
+{
+  "id": "nordics",
+  "label": "Nordics",
+  "countries": [
+    "SE",
+    "NO",
+    "DK",
+    "FI",
+    "IS"
+  ],
+  "document_name": "CV",
+  "paper": "A4",
+  "spelling": "en-GB",
+  "max_pages": 2,
+  "photo": "optional",
+  "date_of_birth": "optional",
+  "marital_status": "omit",
+  "nationality": "omit",
+  "visa_status": "optional_if_relevant",
+  "address": "city_only",
+  "sections_order": [
+    "header",
+    "summary",
+    "experience",
+    "education",
+    "skills",
+    "languages",
+    "certifications"
+  ],
+  "date_format": "MMM YYYY",
+  "references": "omit_on_request_only",
+  "email_tone": "warm",
+  "support": "full",
+  "notes": [
+    "A friendly photo is sometimes included, especially in Sweden and Denmark.",
+    "Plain, modest wording reads better than strong self-promotion."
+  ],
+  "last_reviewed": "2026-10-19"
+}

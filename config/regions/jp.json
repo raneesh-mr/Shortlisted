@@ -1,0 +1,36 @@
+{
+  "id": "jp",
+  "label": "Japan (English resume)",
+  "countries": [
+    "JP"
+  ],
+  "document_name": "Resume",
+  "paper": "A4",
+  "spelling": "en-US",
+  "max_pages": 2,
+  "photo": "optional",
+  "date_of_birth": "optional",
+  "marital_status": "omit",
+  "nationality": "optional",
+  "visa_status": "common",
+  "address": "city_country",
+  "sections_order": [
+    "header",
+    "summary",
+    "experience",
+    "skills",
+    "education",
+    "certifications",
+    "languages"
+  ],
+  "date_format": "YYYY/MM",
+  "references": "omit_on_request_only",
+  "email_tone": "formal",
+  "support": "partial",
+  "support_note": "Japanese employers often require a rirekisho and shokumu keirekisho in a fixed Japanese format. Landed does not build those yet. This pack builds an English resume for international employers in Japan.",
+  "notes": [
+    "Visa status matters for most roles in Japan.",
+    "Japanese language level (for example JLPT N2) is worth listing."
+  ],
+  "last_reviewed": "2026-10-19"
+}

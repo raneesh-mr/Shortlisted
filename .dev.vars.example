@@ -1,0 +1,5 @@
+# Local Workers runtime (npm run preview). Copy to .dev.vars.
+NEXTJS_ENV=development
+# Server secrets for local preview only:
+ANTHROPIC_API_KEY=
+SUPABASE_SERVICE_ROLE_KEY=

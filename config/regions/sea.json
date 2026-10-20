@@ -1,0 +1,45 @@
+{
+  "id": "sea",
+  "label": "Singapore / Southeast Asia",
+  "countries": [
+    "SG",
+    "MY",
+    "ID",
+    "PH",
+    "TH",
+    "VN",
+    "BN",
+    "KH",
+    "MM",
+    "LA"
+  ],
+  "document_name": "Resume",
+  "paper": "A4",
+  "spelling": "en-GB",
+  "max_pages": 2,
+  "photo": "optional",
+  "date_of_birth": "optional",
+  "marital_status": "optional",
+  "nationality": "optional",
+  "visa_status": "optional_if_relevant",
+  "address": "city_country",
+  "sections_order": [
+    "header",
+    "summary",
+    "experience",
+    "skills",
+    "education",
+    "certifications",
+    "languages"
+  ],
+  "date_format": "MMM YYYY",
+  "references": "omit_on_request_only",
+  "email_tone": "formal",
+  "support": "full",
+  "notes": [
+    "Singapore's fair employment guidelines discourage asking for age or marital status.",
+    "Citizenship or pass type is often relevant in Singapore.",
+    "The Philippines commonly uses US spelling; switch it in settings if needed."
+  ],
+  "last_reviewed": "2026-10-19"
+}

@@ -1,0 +1,4 @@
+﻿# Keep LF line endings in the repo so Linux builds (Cloudflare) and scripts behave the same everywhere.
+* text=auto eol=lf
+*.png binary
+*.ico binary

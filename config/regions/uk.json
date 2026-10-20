@@ -1,0 +1,40 @@
+{
+  "id": "uk",
+  "label": "United Kingdom / Ireland",
+  "countries": [
+    "GB",
+    "IE",
+    "IM",
+    "JE",
+    "GG"
+  ],
+  "document_name": "CV",
+  "paper": "A4",
+  "spelling": "en-GB",
+  "max_pages": 2,
+  "photo": "avoid",
+  "date_of_birth": "omit",
+  "marital_status": "omit",
+  "nationality": "omit",
+  "visa_status": "optional_if_relevant",
+  "address": "city_only",
+  "sections_order": [
+    "header",
+    "summary",
+    "experience",
+    "education",
+    "skills",
+    "certifications",
+    "languages"
+  ],
+  "date_format": "MMM YYYY",
+  "references": "omit_on_request_only",
+  "email_tone": "warm",
+  "support": "full",
+  "notes": [
+    "Photos and date of birth are usually left off; equality law discourages asking for them.",
+    "If you need sponsorship or already have the right to work, a short line can help.",
+    "\"References available on request\" is no longer expected."
+  ],
+  "last_reviewed": "2026-10-19"
+}

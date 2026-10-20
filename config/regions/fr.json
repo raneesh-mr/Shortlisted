@@ -1,0 +1,37 @@
+{
+  "id": "fr",
+  "label": "France",
+  "countries": [
+    "FR",
+    "MC"
+  ],
+  "document_name": "CV",
+  "paper": "A4",
+  "spelling": "en-GB",
+  "max_pages": 2,
+  "photo": "optional",
+  "date_of_birth": "optional",
+  "marital_status": "omit",
+  "nationality": "optional",
+  "visa_status": "optional_if_relevant",
+  "address": "city_country",
+  "sections_order": [
+    "header",
+    "summary",
+    "experience",
+    "education",
+    "skills",
+    "languages",
+    "certifications"
+  ],
+  "date_format": "MM/YYYY",
+  "references": "omit_on_request_only",
+  "email_tone": "formal",
+  "support": "full",
+  "notes": [
+    "One page is the norm for early-career CVs; two pages is fine with more experience.",
+    "A photo is optional and less common than it used to be.",
+    "Language levels are often listed."
+  ],
+  "last_reviewed": "2026-10-19"
+}

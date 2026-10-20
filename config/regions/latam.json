@@ -1,0 +1,53 @@
+{
+  "id": "latam",
+  "label": "Latin America",
+  "countries": [
+    "MX",
+    "BR",
+    "AR",
+    "CL",
+    "CO",
+    "PE",
+    "UY",
+    "PY",
+    "BO",
+    "EC",
+    "VE",
+    "CR",
+    "PA",
+    "GT",
+    "HN",
+    "SV",
+    "NI",
+    "DO",
+    "PR"
+  ],
+  "document_name": "CV",
+  "paper": "A4",
+  "spelling": "en-US",
+  "max_pages": 2,
+  "photo": "optional",
+  "date_of_birth": "optional",
+  "marital_status": "optional",
+  "nationality": "optional",
+  "visa_status": "optional_if_relevant",
+  "address": "city_country",
+  "sections_order": [
+    "header",
+    "summary",
+    "experience",
+    "education",
+    "skills",
+    "languages",
+    "certifications"
+  ],
+  "date_format": "MM/YYYY",
+  "references": "omit_on_request_only",
+  "email_tone": "warm",
+  "support": "full",
+  "notes": [
+    "Some countries (for example Mexico and Colombia) often use Letter paper; switch it if needed.",
+    "A photo is still common in some countries but optional for international companies."
+  ],
+  "last_reviewed": "2026-10-19"
+}

@@ -1,0 +1,37 @@
+{
+  "id": "us",
+  "label": "United States / Canada",
+  "countries": [
+    "US",
+    "CA"
+  ],
+  "document_name": "Resume",
+  "paper": "Letter",
+  "spelling": "en-US",
+  "max_pages": 2,
+  "photo": "avoid",
+  "date_of_birth": "omit",
+  "marital_status": "omit",
+  "nationality": "omit",
+  "visa_status": "optional_if_relevant",
+  "address": "city_only",
+  "sections_order": [
+    "header",
+    "summary",
+    "experience",
+    "skills",
+    "education",
+    "certifications",
+    "languages"
+  ],
+  "date_format": "MMM YYYY",
+  "references": "omit_on_request_only",
+  "email_tone": "direct",
+  "support": "full",
+  "notes": [
+    "Photos, date of birth and marital status are usually left off to support fair hiring.",
+    "One page is common early in a career; two pages is normal with more experience.",
+    "Canadian employers often prefer Canadian spelling. You can switch spelling in settings."
+  ],
+  "last_reviewed": "2026-10-19"
+}

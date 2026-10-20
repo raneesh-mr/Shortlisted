@@ -1,0 +1,33 @@
+{
+  "id": "international",
+  "label": "International (default)",
+  "countries": [],
+  "document_name": "CV",
+  "paper": "A4",
+  "spelling": "en-GB",
+  "max_pages": 2,
+  "photo": "avoid",
+  "date_of_birth": "omit",
+  "marital_status": "omit",
+  "nationality": "omit",
+  "visa_status": "optional_if_relevant",
+  "address": "city_country",
+  "sections_order": [
+    "header",
+    "summary",
+    "experience",
+    "skills",
+    "education",
+    "certifications",
+    "languages"
+  ],
+  "date_format": "MMM YYYY",
+  "references": "omit_on_request_only",
+  "email_tone": "direct",
+  "support": "full",
+  "notes": [
+    "A safe, widely accepted format when we don't have a specific pack for your country.",
+    "Add personal details only if they're expected where you're applying."
+  ],
+  "last_reviewed": "2026-10-19"
+}

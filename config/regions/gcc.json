@@ -1,0 +1,42 @@
+{
+  "id": "gcc",
+  "label": "Gulf (GCC)",
+  "countries": [
+    "AE",
+    "SA",
+    "QA",
+    "KW",
+    "BH",
+    "OM"
+  ],
+  "document_name": "CV",
+  "paper": "A4",
+  "spelling": "en-GB",
+  "max_pages": 3,
+  "photo": "common",
+  "date_of_birth": "common",
+  "marital_status": "optional",
+  "nationality": "common",
+  "visa_status": "common",
+  "address": "city_country",
+  "sections_order": [
+    "header",
+    "personal",
+    "summary",
+    "experience",
+    "skills",
+    "education",
+    "certifications",
+    "languages"
+  ],
+  "date_format": "MMM YYYY",
+  "references": "omit_on_request_only",
+  "email_tone": "formal",
+  "support": "full",
+  "notes": [
+    "A photo, nationality and visa status are commonly included.",
+    "Two to three pages is normal for experienced candidates.",
+    "Mentioning your notice period and current location helps recruiters."
+  ],
+  "last_reviewed": "2026-10-19"
+}

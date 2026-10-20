@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "landed",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-19",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "landed" }],
+  // Served on the Real Plannet zone. The zone must be in the same Cloudflare account.
+  "routes": [{ "pattern": "landed.realplannet.com", "custom_domain": true }],
+  // Non-secret settings. Secrets (ANTHROPIC_API_KEY, SUPABASE_SERVICE_ROLE_KEY) are set
+  // with `wrangler secret put`, never here. NEXT_PUBLIC_* values are baked in at build
+  // time from .env.production.local.
+  "vars": {
+    "LLM_MODEL": "claude-opus-5-5"
+  },
+  // Shared per-key limits across every Worker instance (periods can only be 10 or 60 seconds).
+  "ratelimits": [
+    { "name": "LIMIT_IMPORT", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } },
+    { "name": "LIMIT_COMPOSE", "namespace_id": "1004", "simple": { "limit": 12, "period": 60 } },
+    { "name": "LIMIT_EXPORT", "namespace_id": "1002", "simple": { "limit": 30, "period": 60 } },
+    { "name": "LIMIT_ACCOUNT", "namespace_id": "1003", "simple": { "limit": 3, "period": 60 } }
+  ],
+  "observability": { "enabled": true }
+}

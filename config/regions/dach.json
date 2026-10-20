@@ -1,0 +1,40 @@
+{
+  "id": "dach",
+  "label": "Germany / Austria / Switzerland",
+  "countries": [
+    "DE",
+    "AT",
+    "CH",
+    "LI"
+  ],
+  "document_name": "CV",
+  "paper": "A4",
+  "spelling": "en-GB",
+  "max_pages": 2,
+  "photo": "common",
+  "date_of_birth": "common",
+  "marital_status": "optional",
+  "nationality": "common",
+  "visa_status": "optional_if_relevant",
+  "address": "city_country",
+  "sections_order": [
+    "header",
+    "personal",
+    "summary",
+    "experience",
+    "education",
+    "skills",
+    "languages",
+    "certifications"
+  ],
+  "date_format": "MM/YYYY",
+  "references": "omit_on_request_only",
+  "email_tone": "formal",
+  "support": "full",
+  "notes": [
+    "A professional photo and personal details are still common, though not legally required.",
+    "Exact months for every role are expected. Unexplained gaps get noticed.",
+    "German-language roles usually expect a German CV; this builds an English one."
+  ],
+  "last_reviewed": "2026-10-19"
+}

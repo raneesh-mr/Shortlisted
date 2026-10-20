@@ -1,0 +1,37 @@
+{
+  "id": "anz",
+  "label": "Australia / New Zealand",
+  "countries": [
+    "AU",
+    "NZ"
+  ],
+  "document_name": "Resume",
+  "paper": "A4",
+  "spelling": "en-AU",
+  "max_pages": 3,
+  "photo": "avoid",
+  "date_of_birth": "omit",
+  "marital_status": "omit",
+  "nationality": "omit",
+  "visa_status": "optional_if_relevant",
+  "address": "city_only",
+  "sections_order": [
+    "header",
+    "summary",
+    "experience",
+    "skills",
+    "education",
+    "certifications",
+    "languages"
+  ],
+  "date_format": "MMM YYYY",
+  "references": "on_request_line",
+  "email_tone": "warm",
+  "support": "full",
+  "notes": [
+    "Two to three pages is normal.",
+    "Stating your work rights (for example a visa type) is common and helpful.",
+    "Referees are often mentioned; \"Referees available on request\" is acceptable."
+  ],
+  "last_reviewed": "2026-10-19"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "in",
+  "label": "India",
+  "countries": [
+    "IN",
+    "NP",
+    "BD",
+    "LK"
+  ],
+  "document_name": "CV",
+  "paper": "A4",
+  "spelling": "en-IN",
+  "max_pages": 2,
+  "photo": "optional",
+  "date_of_birth": "optional",
+  "marital_status": "optional",
+  "nationality": "optional",
+  "visa_status": "omit",
+  "address": "city_country",
+  "sections_order": [
+    "header",
+    "summary",
+    "experience",
+    "skills",
+    "education",
+    "certifications",
+    "languages",
+    "personal"
+  ],
+  "date_format": "MMM YYYY",
+  "references": "omit_on_request_only",
+  "email_tone": "formal",
+  "support": "full",
+  "notes": [
+    "Many employers still see personal details, but multinationals increasingly prefer them left off.",
+    "Notice period is often asked for; you can mention it in your email."
+  ],
+  "last_reviewed": "2026-10-19"
+}
