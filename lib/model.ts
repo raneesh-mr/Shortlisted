@@ -212,6 +212,11 @@ export const composeInputsSchema = z.object({
 export type ComposeInputs = z.infer<typeof composeInputsSchema>;
 
 export const applicationStatuses = ["saved", "applied", "interview", "offer", "closed"] as const;
+export type ApplicationStatus = (typeof applicationStatuses)[number];
+
+/** "YYYY-MM-DD". The database stores timestamps; only the day matters here. */
+const dayOrNull = z.preprocess((v) => (typeof v === "string" ? v.slice(0, 10) : (v ?? null)), z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable());
+const reminderState = z.enum(["pending", "done", "dismissed"]);
 
 export const applicationSchema = z.object({
   id: z.string().uuid(),
@@ -224,6 +229,10 @@ export const applicationSchema = z.object({
   base_cv_id: z.string().uuid().nullable().default(null),
   email_id: z.string().uuid().nullable(),
   status: z.enum(applicationStatuses),
+  applied_at: dayOrNull.default(null),
+  next_action_at: dayOrNull.default(null),
+  /** Follow-up reminders after applying. In-app only. */
+  reminders: z.object({ day7: reminderState.default("pending"), day14: reminderState.default("pending") }).default({ day7: "pending", day14: "pending" }),
   jd_analysis: jdAnalysisSchema.nullable().default(null),
   match: matchResultSchema.nullable().default(null),
   /** Per requirement key: the user answered it (a fact was added) or said they haven't done it. */

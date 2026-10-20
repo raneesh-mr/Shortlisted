@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { brand } from "@/config/brand";
+import { dueReminders } from "@/lib/tracker/reminders";
 import { useApp } from "./app-provider";
 import { Notice, Spinner, cx } from "./ui";
 
@@ -19,6 +20,8 @@ const tabs = [
 function BottomNav() {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const { applications } = useApp();
+  const due = dueReminders(applications).length;
   return (
     <nav aria-label={t("main")} className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
       <ul className="mx-auto flex max-w-xl">
@@ -34,7 +37,15 @@ function BottomNav() {
                 <svg aria-hidden viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.7} strokeLinejoin="round" strokeLinecap="round">
                   <path d={tab.icon} />
                 </svg>
-                {t(tab.key)}
+                <span className="relative">
+                  {t(tab.key)}
+                  {tab.key === "tracker" && due > 0 && (
+                    <span className="absolute -end-4 -top-5 min-w-5 rounded-full bg-accent px-1 text-[10px] font-semibold leading-5 text-accent-ink">
+                      <span aria-hidden>{due}</span>
+                      <span className="sr-only"> {t("dueBadge", { count: due })}</span>
+                    </span>
+                  )}
+                </span>
               </Link>
             </li>
           );

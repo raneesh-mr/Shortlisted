@@ -158,7 +158,7 @@ export class RemoteRepo implements Repo {
   async listApplications(): Promise<Application[]> {
     return this.cached("applications", async () => {
       const rows = this.check(
-        await this.db.from("applications").select("id,role,company,jd_text,cv_id,base_cv_id,email_id,status,jd_analysis,match,gaps,tailor,compose,notes,created_at,updated_at").order("updated_at", { ascending: false }),
+        await this.db.from("applications").select("id,role,company,jd_text,cv_id,base_cv_id,email_id,status,applied_at,next_action_at,reminders,jd_analysis,match,gaps,tailor,compose,notes,created_at,updated_at").order("updated_at", { ascending: false }),
       );
       return (rows ?? []).flatMap((r) => {
         const parsed = applicationSchema.safeParse({ ...r, notes: r.notes ?? "", role: r.role ?? "", company: r.company ?? "", jd_text: r.jd_text ?? "" });

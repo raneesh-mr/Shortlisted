@@ -52,6 +52,22 @@ Sensible defaults chosen during the build, with the reason. Revisit any of them 
 
 **Payments are not built.** Razorpay will be added in Phase 5 as server routes plus a `subscriptions` table. Nothing in Phase 1 assumes free or paid.
 
+## Phase 4: tracker and nudges (2026-10-22)
+
+**Board for thumbs.** There are five columns (Saved, Applied, Interview, Offer, Closed). On phones, columns are swipeable scroll-snap panels with tabs showing counts; tabs and swipe stay in sync. On wider screens it's a 5-column grid. Cards open a bottom sheet with large "stage" buttons instead of drag and drop, which is unreliable on touch and hard for keyboard and screen-reader users. Within a column, cards sort by next-action date, then by most recently updated.
+
+**Edits save as you type, and on close.** The sheet saves 400 ms after a change. Closing it sooner flushes the pending save, which was a bug the end-to-end test caught (edits were lost when the sheet closed within the debounce window).
+
+**Moving to Applied sets dates.** `applied_at` becomes today and `next_action_at` becomes day 7, unless the user already set them. "I've sent it" in the composer does the same.
+
+**Reminders at day 7 and day 14, in-app only.** They're computed from `applied_at` while the status is Applied, with per-reminder state (pending, done or dismissed) in `applications.reminders`. When both are due, only the later one shows. Sending a follow-up email marks the due ones done. They appear on Home and the Tracker, with a count badge on the Tracker tab (screen-reader text included).
+
+**Calendar file instead of server reminders.** "Add reminders to my calendar" downloads an RFC 5545 `.ics` with all-day events at day 7 and 14, each with an alarm (escaped and line-folded; tested). This gives real nudges without us sending anything.
+
+**Email/WhatsApp reminders stay behind their opt-in, and aren't live.** The separate consents already exist in Me, and the UI says nothing is sent yet. **Seam:** a Cloudflare Cron Trigger plus an email or WhatsApp provider would read `dueReminders` server-side, only for users whose latest consent for that channel is granted.
+
+**Posting checker: questions, not verdicts.** A deterministic checklist covers payment requests, bank or ID requests, crypto/gift cards/wire transfers, personal-email recruiters, chat-app-only contact, unrealistic pay, guarantees, pressure tactics and an unnamed company. Each finding shows the text that triggered it and a question to ask, plus general tips. It runs in the browser, appears on the analysis step when something is found, and is a standalone tool on the Tracker.
+
 ## Phase 2: job description → tailored CV (2026-10-21)
 
 **Six steps, each saved automatically.** The Apply flow is Job → Analysis → Match → Tailor → Details → Email. Analysis, match, gap decisions and proposed changes all live on the application (`jd_analysis`, `match`, `gaps`, `tailor`; migration `20261021000000`), so the user can leave and resume at the right step. Tailoring is optional ("Skip, use my CV as it is"), and follow-up and offer emails can skip straight to the email.

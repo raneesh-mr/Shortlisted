@@ -13,7 +13,8 @@
     "cvs": "CVs",
     "apply": "Apply",
     "tracker": "Tracker",
-    "me": "Me"
+    "me": "Me",
+    "dueBadge": "{count, plural, one {# follow-up due} other {# follow-ups due}}"
   },
   "errors": {
     "network": "We couldn't reach the server. Check your connection and try again.",
@@ -180,9 +181,51 @@
   },
   "tracker": {
     "title": "Tracker",
-    "subtitle": "Keep track of where you've applied.",
-    "comingTitle": "Coming soon",
-    "comingBody": "A simple board for saved, applied, interview and offer, with gentle reminders to follow up. Reminders by email or WhatsApp will only ever be sent if you switch them on."
+    "subtitle": "Where every application stands, and when to follow up.",
+    "emptyTitle": "No applications yet",
+    "emptyBody": "Start one from Apply. It will show here so you can track it through to an offer.",
+    "boardLabel": "Applications by stage",
+    "stages": "Stages",
+    "columnEmpty": "Nothing here.",
+    "untitled": "Untitled role",
+    "appliedShort": "Applied {date}",
+    "updatedShort": "Updated {date}",
+    "nextShort": "Next: {date}",
+    "followUpDue": "Follow-up due",
+    "dueTitle": "{count, plural, one {Follow-up due} other {# follow-ups due}}",
+    "dueDay7": "It's been a week since you applied. A short, polite check-in is normal.",
+    "dueDay14": "Two weeks since you applied. One more check-in is fine; after that, it's OK to move on.",
+    "overdue": "({count, plural, one {# day ago} other {# days ago}})",
+    "writeFollowUp": "Write a follow-up",
+    "markDone": "I've followed up",
+    "dismiss": "Not needed",
+    "stage": "Stage",
+    "role": "Job title",
+    "company": "Company",
+    "appliedOn": "Applied on",
+    "nextAction": "Next step by",
+    "source": "Where you found it",
+    "sourceHint": "For example LinkedIn, a referral, the company site.",
+    "notes": "Notes",
+    "cvUsed": "CV used",
+    "emailUsed": "Email",
+    "none": "None yet",
+    "openEmail": "Open the email",
+    "writeEmail": "Write the email",
+    "reminderInfo": "We'll remind you here at day 7 and day 14 if you haven't moved it on. You can also add both reminders to your own calendar.",
+    "addToCalendar": "Add reminders to my calendar (.ics)",
+    "delete": "Delete application",
+    "deleteTitle": "Delete this application?",
+    "deleteBody": "This removes it, its job description and its emails. Your CVs and facts stay.",
+    "deleteYes": "Delete",
+    "cancel": "Cancel",
+    "checkTitle": "Check a job posting",
+    "checkLead": "Paste a posting to see anything worth double-checking before you apply or share personal details.",
+    "postingLabel": "Job posting",
+    "postingCompany": "Company named in the posting (if any)",
+    "recruiterEmail": "Recruiter's email (if any)",
+    "remindersNote": "Follow-up reminders appear for applications in Applied.",
+    "seeApplied": "See Applied"
   },
   "vault": {
     "title": "Your CVs",
@@ -472,7 +515,8 @@
     "deleteGuestBody": "Permanently deletes your guest facts and CVs from this browser. This can't be undone.",
     "deleteType": "Type \"{phrase}\" to confirm",
     "deleteAction": "Delete permanently",
-    "deleting": "Deleting…"
+    "deleting": "Deleting…",
+    "remindersNotLive": "Email and WhatsApp reminders aren't being sent yet. Your choice is saved for when they launch; until then, reminders show in the app, or add them to your own calendar from the Tracker."
   },
   "offline": {
     "title": "You're offline",
@@ -763,5 +807,54 @@
     "created": "\"{title}\" is ready and will be used for this application. Your original CV is unchanged.",
     "openTailored": "Open it",
     "toDetails": "Next: email details"
+  },
+  "postingCheck": {
+    "titleFound": "{count, plural, one {# thing} other {# things}} worth double-checking",
+    "titleNone": "Nothing obvious stood out",
+    "leadFound": "These aren't proof of anything; real jobs can trip them too. They're questions worth answering before you share personal details.",
+    "leadNone": "That's a good sign, not a guarantee. Do your usual checks before sharing personal details.",
+    "tipsTitle": "Simple checks for any posting",
+    "tip1": "Find the job on the company's own careers page, reached from a search, not from a link in the message.",
+    "tip2": "Real employers don't charge you to apply, train or get a visa.",
+    "tip3": "Don't share bank details or ID documents until you have a written offer you've verified.",
+    "tip4": "If something feels rushed or too good to be true, it's fine to slow down and ask questions.",
+    "check": {
+      "asks_payment": {
+        "title": "Asks you to pay",
+        "ask": "Ask what the fee is for and whether it's in writing. Real employers don't charge candidates."
+      },
+      "bank_or_id": {
+        "title": "Asks for bank or ID details",
+        "ask": "These are only needed after a verified written offer. Ask why they're needed now."
+      },
+      "untraceable_payment": {
+        "title": "Mentions crypto, gift cards or wire transfers",
+        "ask": "These payments can't be reversed. Ask why a normal payroll or company account isn't used."
+      },
+      "personal_email": {
+        "title": "Recruiter uses a personal email",
+        "ask": "Check the person on the company's website or LinkedIn, and reply to a company address if you can."
+      },
+      "chat_only": {
+        "title": "Contact only by chat app",
+        "ask": "Ask for a call or an email from a company domain. Interviews held only by text chat are unusual."
+      },
+      "unrealistic_pay": {
+        "title": "Pay sounds unusually high or easy",
+        "ask": "Compare with similar roles. Ask how pay is calculated and what the hours are."
+      },
+      "guarantees": {
+        "title": "Guarantees a job or visa",
+        "ask": "No one can guarantee selection without an interview. Ask what the process actually is."
+      },
+      "urgency": {
+        "title": "Pushes you to hurry",
+        "ask": "Pressure to act fast is a common tactic. It's fine to take a day and check."
+      },
+      "unnamed_company": {
+        "title": "The company isn't clearly named",
+        "ask": "Ask who the employer is. Agencies sometimes keep it quiet, but you should know before sharing details."
+      }
+    }
   }
 }

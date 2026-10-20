@@ -25,6 +25,7 @@ import { requirementsOf } from "@/lib/jd/basic";
 import { matchBasis } from "@/lib/jd/match";
 import type { JdAnalysis, MatchItem, MatchResult, TailorChange, TailorDecision } from "@/lib/jd/schema";
 import { applyTailor } from "@/lib/tailor/apply";
+import { markFollowUpSent, onStatusChange } from "@/lib/tracker/reminders";
 
 type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -88,8 +89,9 @@ function Composer() {
   const stored = applications.find((a) => a.id === id) ?? null;
 
   const [app, setApp] = useState<Application | null>(stored);
-  const [step, setStep] = useState<Step>(initialStep(stored));
-  const [variant, setVariant] = useState<EmailVariant>("apply_direct");
+  const variantParam = emailVariants.find((v) => v === params.get("variant")) ?? null;
+  const [step, setStep] = useState<Step>(variantParam ? 5 : initialStep(stored));
+  const [variant, setVariant] = useState<EmailVariant>(variantParam ?? "apply_direct");
   const [useAi, setUseAi] = useState(true);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
@@ -112,6 +114,8 @@ function Composer() {
       .listEmails(app.id)
       .then((emails) => {
         const e = emails.find((x) => x.id === app.email_id);
+        // Opening "write a follow-up" starts a new email; the previous one stays saved.
+        if (variantParam && variantParam !== e?.variant) return;
         if (e) {
           setVariant(e.variant);
           setDraft({
@@ -132,7 +136,7 @@ function Composer() {
       })
       .catch(() => setStep(1))
       .finally(() => setLoadedEmail(true));
-  }, [app, repo, loadedEmail]);
+  }, [app, repo, loadedEmail, variantParam]);
 
   // Autosave the application (job details and composer inputs).
   useEffect(() => {
@@ -413,6 +417,7 @@ function Composer() {
       {step === 2 && app.jd_analysis && (
         <AnalysisStep
           analysis={app.jd_analysis}
+          jdText={app.jd_text}
           busy={stepBusy}
           onChange={(jd_analysis) => setField({ jd_analysis })}
           onReanalyse={analyse}
@@ -602,7 +607,9 @@ function Composer() {
               // Save now: the debounced saves would be cancelled by navigating away.
               try {
                 await repo!.saveEmail(emailRecord(draft, app, lint));
-                await saveApplication({ ...app, email_id: draft.emailId, status: app.status === "saved" ? "applied" : app.status, updated_at: nowIso() });
+                const sentApp = onStatusChange({ ...app, email_id: draft.emailId }, app.status === "saved" ? "applied" : app.status);
+                // Sending a follow-up clears the reminders that were due.
+                await saveApplication({ ...(draft.variant === "follow_up" ? markFollowUpSent(sentApp) : sentApp), updated_at: nowIso() });
                 router.push("/apply");
               } catch {
                 setError(te("server_error"));

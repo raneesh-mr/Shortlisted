@@ -198,6 +198,7 @@ export default function Me() {
           </p>
           <Switch label={t("emailUpdates")} hint={consentTexts.email_updates.text} checked={!!current.email_updates?.granted} onChange={(v) => toggleConsent("email_updates", v)} />
           <Switch label={t("whatsapp")} hint={consentTexts.whatsapp.text} checked={!!current.whatsapp?.granted} onChange={(v) => toggleConsent("whatsapp", v)} />
+          <p className="mt-1 text-sm text-ink-2">{t("remindersNotLive")}</p>
         </div>
 
         <div>

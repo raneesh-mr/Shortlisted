@@ -154,7 +154,7 @@ test("guest: add facts by hand, then delete all data", async ({ page }) => {
   await expect(page).toHaveURL(/\/welcome/);
 });
 
-test("guest: compose an application email (basic mode), check it, send it", async ({ page }) => {
+test("guest: full apply flow (basic mode): analyse, match, tailor, email, track", async ({ page }) => {
   await startAsGuest(page);
   await onboard(page, "Import my existing CV");
   await page.getByRole("tab", { name: "Paste text" }).click();
@@ -261,4 +261,40 @@ test("guest: compose an application email (basic mode), check it, send it", asyn
   await entry.click();
   await expect(page.locator("mark", { hasText: "spearheaded" })).toBeVisible();
   await expect(page.getByText(/2 things to check \(2 to fix\)/)).toBeVisible();
+
+  // Tracker: the sent application sits in Applied.
+  await page.getByRole("link", { name: "Tracker", exact: true }).click();
+  const card = page.getByRole("button", { name: /Facilities Manager.*Marina Living.*Applied/ });
+  await expect(card).toBeVisible();
+
+  // Backdate the application by 10 days: the day-7 follow-up falls due.
+  await card.click();
+  const sheet = page.getByRole("dialog");
+  const tenDaysAgo = new Date(Date.now() - 10 * 86_400_000).toISOString().slice(0, 10);
+  await sheet.getByLabel("Applied on").fill(tenDaysAgo);
+  await sheet.getByLabel("Notes").fill("Spoke to Sara at the careers fair.");
+  await expect(sheet.getByRole("button", { name: "Add reminders to my calendar (.ics)" })).toBeVisible();
+  const ics = page.waitForEvent("download");
+  await sheet.getByRole("button", { name: "Add reminders to my calendar (.ics)" }).click();
+  expect((await ics).suggestedFilename()).toMatch(/\.ics$/);
+  await page.keyboard.press("Escape");
+
+  await expect(page.getByRole("heading", { name: "Follow-up due" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Tracker 1 follow-up due/ })).toBeVisible();
+  await page.getByRole("button", { name: "I've followed up" }).click();
+  await expect(page.getByRole("heading", { name: "Follow-up due" })).toBeHidden();
+
+  // Moving it on: a thumb-sized stage button in the sheet.
+  await page.getByRole("button", { name: /Facilities Manager.*Marina Living/ }).first().click();
+  await page.getByRole("dialog").getByRole("button", { name: "Interview", exact: true }).click();
+  await page.keyboard.press("Escape");
+  await page.getByRole("tab", { name: /Interview \(1\)/ }).click();
+  await expect(page.getByRole("button", { name: /Facilities Manager.*Marina Living/ })).toBeVisible();
+
+  // Posting check: questions to ask, never a verdict.
+  await page.getByLabel("Job posting", { exact: true }).fill("URGENT HIRING. Work from home and earn $500 per day. Pay a small registration fee to start. Contact us on WhatsApp: jobs.fast@gmail.com");
+  await expect(page.getByRole("heading", { name: /things worth double-checking/ })).toBeVisible();
+  for (const title of ["Asks you to pay", "Recruiter uses a personal email", "Contact only by chat app", "Pay sounds unusually high or easy", "Pushes you to hurry"]) {
+    await expect(page.getByText(title, { exact: true })).toBeVisible();
+  }
 });

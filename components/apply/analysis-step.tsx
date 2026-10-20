@@ -2,11 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import type { JdAnalysis } from "@/lib/jd/schema";
+import { PostingCheck } from "../posting-check";
 import { Button, Card, Notice, Select, TextInput } from "../ui";
 import { ListEditor } from "./list-editor";
 
 export function AnalysisStep({
   analysis,
+  jdText,
   onChange,
   onReanalyse,
   busy,
@@ -14,6 +16,7 @@ export function AnalysisStep({
   onBack,
 }: {
   analysis: JdAnalysis;
+  jdText: string;
   onChange: (a: JdAnalysis) => void;
   onReanalyse: () => void;
   busy: boolean;
@@ -26,6 +29,7 @@ export function AnalysisStep({
   return (
     <section className="flex flex-col gap-4">
       <Notice>{analysis.method === "ai" ? t("analysedAi") : t("analysedBasic")}</Notice>
+      <PostingCheck text={jdText} company={analysis.company} compact />
       <div className="grid gap-3 sm:grid-cols-2">
         <TextInput label={t("jobTitle")} value={analysis.title} maxLength={160} onChange={(e) => set({ title: e.target.value })} />
         <TextInput label={t("company")} value={analysis.company} maxLength={160} onChange={(e) => set({ company: e.target.value })} />

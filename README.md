@@ -4,7 +4,7 @@ A free, mobile-first web app that turns a job seeker's real experience into a cl
 
 Hosted at `shortlisted.realplannet.com` on Cloudflare Workers. Brand name, URL and colours live in [`config/brand.ts`](config/brand.ts) and env vars.
 
-**Status: Phases 1–3 built.** Phase 1: foundation, auth, facts, CV import, builder, export and vault. Phase 2: job description analysis, match and gap questions, and tailored CVs from approved changes. Phase 3: the application email composer. Phase 4 (tracker and reminders) is next. See [DECISIONS.md](DECISIONS.md) and [COMPLIANCE.md](COMPLIANCE.md).
+**Status: Phases 1–4 built; Phase 5 has seams only (by design).** Phase 1: foundation, auth, facts, CV import, builder, export and vault. Phase 2: job description analysis, match and gap questions, and tailored CVs from approved changes. Phase 3: the application email composer. Phase 4: the tracker with follow-up reminders and a job-posting checker. See [DECISIONS.md](DECISIONS.md) and [COMPLIANCE.md](COMPLIANCE.md).
 
 ## Stack
 
@@ -90,6 +90,7 @@ lib/
   jd/                   boilerplate split, basic + AI job analysis, matching, keyword coverage
   tailor/               proposed changes (basic + AI), truth checks, applying accepted changes
   email/                variants, fact selection, basic + AI composers, mailto/.eml
+  tracker/              reminders (day 7 / 14), calendar (.ics), posting checks
   humanizer/            banned phrases + deterministic lint
   import/               text extraction, heuristic + AI parsers, coverage check
   repo/                 Repo interface: LocalRepo (IndexedDB, guest) / RemoteRepo (Supabase)

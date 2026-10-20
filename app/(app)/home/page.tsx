@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useApp } from "@/components/app-provider";
 import { RegionBanner } from "@/components/region";
+import { DueReminders } from "@/components/tracker/due-reminders";
 import { Button, Card } from "@/components/ui";
 import { newApplication } from "@/lib/email/new-application";
 
@@ -30,6 +31,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-5">
       <RegionBanner />
+      <DueReminders />
       <Card className="border-accent">
         <h1 className="text-xl font-semibold">{t("jdTitle")}</h1>
         <p className="mt-1 text-ink-2">{t("jdComing")}</p>
