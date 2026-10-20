@@ -8,6 +8,7 @@ import { FactForm } from "@/components/fact-forms";
 import { Sheet } from "@/components/sheet";
 import { Button, Card, Checkbox, Notice, PageHeader, Spinner, Switch, TextArea, cx } from "@/components/ui";
 import { apiFetch, errorKey } from "@/lib/client-api";
+import { track } from "@/lib/analytics";
 import { newCv } from "@/lib/cv/create";
 import { formatRange } from "@/lib/cv/dates";
 import { ExtractError, extractText } from "@/lib/import/extract";
@@ -79,6 +80,7 @@ export default function ImportPage() {
       });
       const data = (await res.json()) as ImportResult;
       setResult(data);
+      track({ name: "cv_imported", method: data.method });
       setDrafts(data.facts);
       setState(Object.fromEntries(data.facts.map((f) => [f.id, "pending" as ItemState])));
       setAttention(data.attention.map((line) => ({ text: line, done: false })));

@@ -9,6 +9,7 @@ import { useApp } from "@/components/app-provider";
 import { CvPreview, type LineTarget } from "@/components/cv-preview";
 import { CountrySelect, RegionSummary } from "@/components/region";
 import { Button, Card, Notice, PageHeader, Select, Spinner, Switch, TextArea, TextInput, cx } from "@/components/ui";
+import { track } from "@/lib/analytics";
 import { runAtsCheck } from "@/lib/ats/check";
 import { ApiClientError, apiFetch, downloadBlob, errorKey, safeFilename } from "@/lib/client-api";
 import { buildCvDocument, defaultCvContent, effectiveSettings, sectionTitles } from "@/lib/cv/document";
@@ -179,6 +180,7 @@ function Builder() {
         body: JSON.stringify({ cv, facts, mode: "file" }),
       });
       downloadBlob(await res.blob(), `${safeFilename(`${doc!.name || cv!.title} ${doc!.document_name}`)}.${format}`);
+      track({ name: "cv_exported", format });
     } catch (err) {
       const code = errorKey(err);
       const chars = err instanceof ApiClientError && Array.isArray(err.extra.chars) ? (err.extra.chars as string[]).join(" ") : "";

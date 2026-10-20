@@ -516,7 +516,10 @@
     "deleteType": "Type \"{phrase}\" to confirm",
     "deleteAction": "Delete permanently",
     "deleting": "Deleting…",
-    "remindersNotLive": "Email and WhatsApp reminders aren't being sent yet. Your choice is saved for when they launch; until then, reminders show in the app, or add them to your own calendar from the Tracker."
+    "remindersNotLive": "Email and WhatsApp reminders aren't being sent yet. Your choice is saved for when they launch; until then, reminders show in the app, or add them to your own calendar from the Tracker.",
+    "careerTitle": "Career snapshot",
+    "careerBody": "See where your experience could take you next with {parent}'s Career Blueprint. It opens on their site; nothing from here is shared.",
+    "careerLink": "Open Career Blueprint"
   },
   "offline": {
     "title": "You're offline",

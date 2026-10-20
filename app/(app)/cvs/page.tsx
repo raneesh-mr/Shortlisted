@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useApp } from "@/components/app-provider";
 import { Button, Card, LinkButton, Notice, PageHeader, TextInput } from "@/components/ui";
+import { track } from "@/lib/analytics";
 import { duplicateCv, newCv } from "@/lib/cv/create";
 import { getRegionPack } from "@/lib/regions";
 
@@ -21,6 +22,7 @@ export default function Vault() {
   async function create() {
     const cv = newCv(t("newTitle"), profile);
     await saveCv(cv, { snapshot: true });
+    track({ name: "cv_created" });
     router.push(`/cvs/edit?id=${cv.id}`);
   }
 

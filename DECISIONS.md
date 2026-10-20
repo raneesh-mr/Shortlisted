@@ -52,6 +52,22 @@ Sensible defaults chosen during the build, with the reason. Revisit any of them 
 
 **Payments are not built.** Razorpay will be added in Phase 5 as server routes plus a `subscriptions` table. Nothing in Phase 1 assumes free or paid.
 
+## Phase 5: seams only, by design (2026-10-22)
+
+The spec says "do not build now, only leave seams". These are the extension points; none of them changes behaviour today.
+
+**Feature flags** (`config/features.ts`). `referrals`, `payments` and `analytics` are `false`, and a test fails if any of them is switched on without a matching change.
+
+**Career snapshot.** Set `NEXT_PUBLIC_CAREER_BLUEPRINT_URL` and a card appears in Me linking out to Real Plannet's Career Blueprint. It's a plain link; nothing is shared. A later integration should pass data only with an explicit, separately consented export.
+
+**Paid extras (Razorpay).** `lib/payments/types.ts` defines `Plan`, `CheckoutSession` and `PaymentProvider` (create order, verify webhook signature). The ground rules are written into it: server-only keys, signature-verified webhooks, an `entitlements` table under RLS, free features stay free, no countdowns or scarcity copy. `plans` is empty.
+
+**Referral credits.** Not built. Plan: a `referral_codes` table (user_id, code) and `referral_events` (code, referred_user_id, status, created_at) under RLS. Credit only after the referred person confirms their own email; no personal data about the referred person goes back to the referrer beyond a count.
+
+**Arabic, Hindi and Spanish UI.** The scaffolding is ready: all UI strings are typed keys in `messages/en.json`, `dir` comes from the locale (`i18n/config.ts` lists RTL locales), and layout uses logical CSS only. A test now fails if any component uses physical left/right classes (`ml-`, `pr-`, `text-left`…), so Arabic can be added without rework. To add a locale: translate `messages/{locale}.json`, add it to `locales`, and resolve it in `i18n/request.ts` (a locale route segment or cookie). Legal pages (privacy) should be translated as whole documents. Region-pack notes and lint hints are English today.
+
+**Analytics.** `lib/analytics.ts` exposes `track()` with a closed union of event names whose only properties are enums (format, method). The types make it impossible to pass free text, names, CV content or URLs. It's a no-op until a cookie-less, aggregated provider is chosen. It's already called at the key moments (CV created, imported, exported, application created, CV tailored, email composed, follow-up marked), so turning it on needs no new call sites. Turning it on also needs a privacy-notice update and a check that no consent banner is required for the chosen provider.
+
 ## Phase 4: tracker and nudges (2026-10-22)
 
 **Board for thumbs.** There are five columns (Saved, Applied, Interview, Offer, Closed). On phones, columns are swipeable scroll-snap panels with tabs showing counts; tabs and swipe stay in sync. On wider screens it's a 5-column grid. Cards open a bottom sheet with large "stage" buttons instead of drag and drop, which is unreliable on touch and hard for keyboard and screen-reader users. Within a column, cards sort by next-action date, then by most recently updated.

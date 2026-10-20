@@ -24,6 +24,7 @@ import { getRegionPack } from "@/lib/regions";
 import { requirementsOf } from "@/lib/jd/basic";
 import { matchBasis } from "@/lib/jd/match";
 import type { JdAnalysis, MatchItem, MatchResult, TailorChange, TailorDecision } from "@/lib/jd/schema";
+import { track } from "@/lib/analytics";
 import { applyTailor } from "@/lib/tailor/apply";
 import { markFollowUpSent, onStatusChange } from "@/lib/tracker/reminders";
 
@@ -255,6 +256,7 @@ function Composer() {
       const title = [app.role || app.jd_analysis?.title || base.title, app.company].filter(Boolean).join(" – ");
       const tailored = applyTailor(base, app.tailor.changes, app.tailor.decisions, title);
       await saveCv(tailored, { snapshot: true });
+      track({ name: "cv_tailored", method: app.tailor.method });
       setField({ cv_id: tailored.id, tailor: { ...app.tailor, tailored_cv_id: tailored.id } });
     });
 
@@ -282,6 +284,7 @@ function Composer() {
         }),
       });
       const r = (await res.json()) as ComposeResult;
+      if (!rewriteSlot) track({ name: "email_composed", method: r.method });
       setDraft((prev) => ({
         emailId: rewriteSlot && prev ? prev.emailId : newId(),
         variant,

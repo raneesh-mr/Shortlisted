@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { track } from "@/lib/analytics";
 import { nowIso } from "@/lib/model";
 import { dueReminders } from "@/lib/tracker/reminders";
 import { useApp } from "../app-provider";
@@ -32,7 +33,13 @@ export function DueReminders() {
                 <Link href={`/apply/compose?id=${a.id}&variant=follow_up`} className="inline-flex min-h-11 items-center rounded-xl bg-accent px-4 font-medium text-accent-ink">
                   {t("writeFollowUp")}
                 </Link>
-                <Button variant="secondary" onClick={() => saveApplication({ ...a, reminders: { ...a.reminders, [key]: "done" }, updated_at: nowIso() })}>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    track({ name: "follow_up_marked" });
+                    void saveApplication({ ...a, reminders: { ...a.reminders, [key]: "done" }, updated_at: nowIso() });
+                  }}
+                >
                   {t("markDone")}
                 </Button>
                 <Button variant="ghost" onClick={() => saveApplication({ ...a, reminders: { ...a.reminders, [key]: "dismissed" }, updated_at: nowIso() })}>

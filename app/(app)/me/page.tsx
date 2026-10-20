@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { brand } from "@/config/brand";
+import { features } from "@/config/features";
 import { spellings, type Spelling } from "@/config/regions/schema";
 import { consentTexts, type ConsentPurpose } from "@/config/consents";
 import { GUEST_FLAG, useApp } from "@/components/app-provider";
@@ -169,6 +170,16 @@ export default function Me() {
           )}
         </div>
       </Card>
+
+      {features.careerSnapshotUrl && (
+        <Card className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold">{t("careerTitle")}</h2>
+          <p className="text-ink-2">{t("careerBody", { parent: brand.parent.name })}</p>
+          <a href={features.careerSnapshotUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-accent underline">
+            {t("careerLink")}
+          </a>
+        </Card>
+      )}
 
       <Card className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">{t("appearance")}</h2>

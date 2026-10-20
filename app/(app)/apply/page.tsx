@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useApp } from "@/components/app-provider";
 import { Button, Card, Notice, PageHeader } from "@/components/ui";
+import { track } from "@/lib/analytics";
 import { newApplication } from "@/lib/email/new-application";
 
 export default function Apply() {
@@ -17,6 +18,7 @@ export default function Apply() {
   async function start() {
     const app = newApplication(cvs);
     await saveApplication(app);
+    track({ name: "application_created" });
     router.push(`/apply/compose?id=${app.id}`);
   }
 

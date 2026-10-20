@@ -4,7 +4,7 @@ A free, mobile-first web app that turns a job seeker's real experience into a cl
 
 Hosted at `shortlisted.realplannet.com` on Cloudflare Workers. Brand name, URL and colours live in [`config/brand.ts`](config/brand.ts) and env vars.
 
-**Status: Phases 1–4 built; Phase 5 has seams only (by design).** Phase 1: foundation, auth, facts, CV import, builder, export and vault. Phase 2: job description analysis, match and gap questions, and tailored CVs from approved changes. Phase 3: the application email composer. Phase 4: the tracker with follow-up reminders and a job-posting checker. See [DECISIONS.md](DECISIONS.md) and [COMPLIANCE.md](COMPLIANCE.md).
+**Status: Phases 1–4 built; Phase 5 has seams only (by design).** Phase 1: foundation, auth, facts, CV import, builder, export and vault. Phase 2: job description analysis, match and gap questions, and tailored CVs from approved changes. Phase 3: the application email composer. Phase 4: the tracker with follow-up reminders and a job-posting checker. Phase 5 extras (career snapshot, referrals, payments, more UI languages, analytics) have documented seams in `config/features.ts`, `lib/payments`, `lib/analytics.ts` and DECISIONS.md. See [DECISIONS.md](DECISIONS.md) and [COMPLIANCE.md](COMPLIANCE.md).
 
 ## Stack
 
@@ -38,6 +38,7 @@ Without Supabase keys the app runs in **guest mode only** (data in the browser).
 | `LLM_MODEL` | `wrangler.jsonc` var | Model id, default `claude-opus-5-5` |
 | `NEXT_PUBLIC_APP_URL` | build-time, public | Canonical URL (metadata) |
 | `NEXT_PUBLIC_BRAND_NAME` | build-time, public | Product name |
+| `NEXT_PUBLIC_CAREER_BLUEPRINT_URL` | build-time, public | Optional. Shows the Career snapshot link in Me |
 
 Locally, `.env.local` serves `npm run dev`, and `.dev.vars` (copy `.dev.vars.example`) serves `npm run preview`.
 

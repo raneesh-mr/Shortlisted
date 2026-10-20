@@ -7,6 +7,7 @@ import { useApp } from "@/components/app-provider";
 import { RegionBanner } from "@/components/region";
 import { DueReminders } from "@/components/tracker/due-reminders";
 import { Button, Card } from "@/components/ui";
+import { track } from "@/lib/analytics";
 import { newApplication } from "@/lib/email/new-application";
 
 export default function Home() {
@@ -25,6 +26,7 @@ export default function Home() {
   async function startApplication() {
     const app = newApplication(cvs);
     await saveApplication(app);
+    track({ name: "application_created" });
     router.push(`/apply/compose?id=${app.id}`);
   }
 
