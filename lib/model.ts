@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { personalFields, sectionIds, spellings } from "@/config/regions/schema";
+import { gapDecisionSchema, jdAnalysisSchema, matchResultSchema, tailorChangeSchema, tailorDecisionSchema } from "@/lib/jd/schema";
 
 /* ---------- Facts: the user's confirmed truth. Every CV line cites one. ---------- */
 
@@ -217,9 +218,25 @@ export const applicationSchema = z.object({
   role: z.string().trim().max(160),
   company: z.string().trim().max(160),
   jd_text: z.string().max(30_000),
+  /** The CV used for the email: the tailored one once created, else the base. */
   cv_id: z.string().uuid().nullable(),
+  /** The CV the user started from (Phase 2 tailors a copy of it). */
+  base_cv_id: z.string().uuid().nullable().default(null),
   email_id: z.string().uuid().nullable(),
   status: z.enum(applicationStatuses),
+  jd_analysis: jdAnalysisSchema.nullable().default(null),
+  match: matchResultSchema.nullable().default(null),
+  /** Per requirement key: the user answered it (a fact was added) or said they haven't done it. */
+  gaps: z.record(z.string(), gapDecisionSchema).default({}),
+  tailor: z
+    .object({
+      method: z.enum(["ai", "basic"]),
+      changes: z.array(tailorChangeSchema),
+      decisions: z.record(z.string(), tailorDecisionSchema),
+      tailored_cv_id: z.string().uuid().nullable(),
+    })
+    .nullable()
+    .default(null),
   compose: composeInputsSchema,
   notes: z.string().max(4000).default(""),
   created_at: z.string(),

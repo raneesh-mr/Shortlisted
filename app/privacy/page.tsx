@@ -67,10 +67,12 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2>Application emails</h2>
+          <h2>Job descriptions, tailoring and emails</h2>
           <p>
-            When you write an email, we use the job description you paste only to choose which of your facts fit. If &quot;Use AI&quot;
-            is on, your relevant facts, the details you typed and the job description go to Anthropic to word the email; they
+            The job description you paste is used to list what the job asks for, check it against your facts, suggest changes to
+            a copy of your CV and choose which facts to mention in your email. Nothing about the job is ever added to your facts
+            unless you type it yourself in answer to a question. If &quot;Use AI&quot;
+            is on, your relevant facts, the details you typed and the job description go to Anthropic for these steps; they
             aren&apos;t used to train models. With AI off, a plain template quotes your facts word for word. We never send email for
             you: it opens in your own email app. Your applications and emails are saved like your CVs (in your browser as a guest, or
             in your account) and you can delete them at any time.

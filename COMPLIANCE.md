@@ -17,6 +17,7 @@ What is implemented for GDPR, UK GDPR and India's DPDP Act 2023, as of Phase 1. 
 | Security: verified isolation | Automated test: a second user can't read, update, delete or insert another user's rows or files | `tests/unit/rls.test.ts`, `scripts/verify-rls.mjs` |
 | No personal data in logs | Server logs record error class or status only. Zod errors return field paths, never values. Audit table stores event names only | `lib/api.ts`, `lib/llm.ts`, API routes |
 | No personal data in caches | The service worker never caches `/api/*` or `/auth/*`. Exports are `Cache-Control: no-store` | `public/sw.js` |
+| Job descriptions and tailoring | The job text is stored with the application (deleted with it). With AI off, analysis, matching and tailoring run without sending anything to the AI provider. Gap answers become facts only when the user types them | `app/(app)/apply`, `lib/jd`, `lib/tailor` |
 | Email composer | No server-side sending: emails open in the user's own mail app. With AI off, nothing goes to the AI provider. Applications and emails are covered by export and deletion | `app/(app)/apply`, `lib/email` |
 | Referential ownership | Rows can only reference the user's own applications, CVs and emails (RLS with-check helpers) | migration `20261020000100`, `tests/unit/rls.test.ts` |
 | Guest mode | Data stays in the browser (IndexedDB). Nothing is sent unless the user exports or migrates | `lib/repo/local.ts` |

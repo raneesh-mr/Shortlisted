@@ -4,7 +4,7 @@ A free, mobile-first web app that turns a job seeker's real experience into a cl
 
 Hosted at `shortlisted.realplannet.com` on Cloudflare Workers. Brand name, URL and colours live in [`config/brand.ts`](config/brand.ts) and env vars.
 
-**Status: Phase 1 and Phase 3 built.** Phase 1: foundation, auth, facts, CV import, builder, export and vault. Phase 3: the application email composer. Phase 2 (CV tailoring) is next. See [DECISIONS.md](DECISIONS.md) and [COMPLIANCE.md](COMPLIANCE.md).
+**Status: Phases 1–3 built.** Phase 1: foundation, auth, facts, CV import, builder, export and vault. Phase 2: job description analysis, match and gap questions, and tailored CVs from approved changes. Phase 3: the application email composer. Phase 4 (tracker and reminders) is next. See [DECISIONS.md](DECISIONS.md) and [COMPLIANCE.md](COMPLIANCE.md).
 
 ## Stack
 
@@ -80,13 +80,15 @@ Country detection reads Cloudflare's `cf-ipcountry` header (with Vercel's header
 ```
 app/                    routes (App Router)
   (app)/                signed-in or guest app: home, cvs, cvs/facts, cvs/import, cvs/edit, apply, apply/compose, tracker, me
-  api/                  cv/import, export/[format], email/compose, humanize/lint, account (DELETE), account/export, geo
+  api/                  cv/import, cv/tailor, jd/analyze, match, export/[format], email/compose, humanize/lint, account (DELETE), account/export, geo
   auth/                 callback (PKCE code exchange), finish (consent + guest migration)
   welcome, onboarding, privacy, offline
 components/             UI primitives, app shell, provider, CV preview, fact forms
 config/                 brand, consent texts, regions/*.json (+ Zod schema)
 lib/
   cv/                   render model (document.ts), PDF, DOCX, templates, dates
+  jd/                   boilerplate split, basic + AI job analysis, matching, keyword coverage
+  tailor/               proposed changes (basic + AI), truth checks, applying accepted changes
   email/                variants, fact selection, basic + AI composers, mailto/.eml
   humanizer/            banned phrases + deterministic lint
   import/               text extraction, heuristic + AI parsers, coverage check
@@ -108,4 +110,6 @@ Add `config/regions/<id>.json` matching [`config/regions/schema.ts`](config/regi
 - Unconfirmed facts never render.
 - Imports are checked in both directions: every source line a fact doesn't explain goes to "needs your attention", and every fact whose wording isn't in the source is flagged as unverified.
 - Per-CV wording edits are stored as overrides. The underlying fact changes only when the user chooses "Update the fact".
+- Tailoring: changes are proposals with before/after; nothing applies until accepted, and the base CV is never modified. AI rewrites that add or change a number are discarded; new names and job-description terms are flagged. Keyword coverage only counts words that appear in lines from the user's facts.
+- Gap questions: a requirement the user hasn't shown is asked about, never assumed. A fact is only created from the user's own answer; "I haven't done this" is remembered.
 - Emails: every evidence sentence must cite a fact on the chosen CV (uncited text is dropped), and a deterministic lint flags any number, name or praise word that isn't in the user's own facts or inputs. Flags are shown, never hidden.

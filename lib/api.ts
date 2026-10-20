@@ -95,3 +95,9 @@ export async function allow(req: Request, scope: string, userId: string | null, 
   const results = await Promise.all(keys.map((key) => shared.limit({ key })));
   return results.every((r) => r.success);
 }
+
+/** Maps LLM failures to typed API errors. */
+export function llmErrorResponse(code: "not_configured" | "refused" | "invalid_output" | "unavailable") {
+  const map = { not_configured: "not_configured", refused: "ai_refused", invalid_output: "ai_invalid", unavailable: "ai_unavailable" } as const;
+  return apiError(map[code], 502);
+}

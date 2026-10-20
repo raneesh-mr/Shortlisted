@@ -121,6 +121,7 @@ describe("row level security", () => {
     await expect(
       as(B, () => db.query(`insert into public.cvs (title, region_id, template_id, content, base_cv_id) values ('Copy', 'uk', 'modern', '{}', $1)`, [cv.rows[0]!.id])),
     ).rejects.toThrow(/row-level security/);
+    await expect(as(B, () => db.query(`insert into public.applications (base_cv_id) values ($1)`, [cv.rows[0]!.id]))).rejects.toThrow(/row-level security/);
     expect((await as(A, () => db.query(`select * from public.emails`))).rows).toHaveLength(1);
   });
 

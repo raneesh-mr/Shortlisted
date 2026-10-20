@@ -30,7 +30,7 @@ export function splitSentences(text: string): string[] {
     .filter((s) => s.split(" ").length >= 2);
 }
 
-function detectSpelling(text: string, fallback: Spelling | null): Spelling | null {
+export function detectSpelling(text: string, fallback: Spelling | null): Spelling | null {
   let us = 0;
   let uk = 0;
   for (const [usRe, ukRe] of SPELLING_PAIRS) {

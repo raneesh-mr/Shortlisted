@@ -52,6 +52,30 @@ Sensible defaults chosen during the build, with the reason. Revisit any of them 
 
 **Payments are not built.** Razorpay will be added in Phase 5 as server routes plus a `subscriptions` table. Nothing in Phase 1 assumes free or paid.
 
+## Phase 2: job description → tailored CV (2026-10-21)
+
+**Six steps, each saved automatically.** The Apply flow is Job → Analysis → Match → Tailor → Details → Email. Analysis, match, gap decisions and proposed changes all live on the application (`jd_analysis`, `match`, `gaps`, `tailor`; migration `20261021000000`), so the user can leave and resume at the right step. Tailoring is optional ("Skip, use my CV as it is"), and follow-up and offer emails can skip straight to the email.
+
+**One AI switch per application.** "Use AI for this application" in step 1 covers analysis, matching, tailoring and email wording. The basic path runs every step without sending anything to the AI provider, which is what the end-to-end tests exercise.
+
+**Boilerplate is set aside, not deleted.** Equal-opportunity statements, benefits sections and recruitment-fraud or privacy notices are separated before analysis, then shown in a collapsed "Set aside" panel.
+
+**Basic analysis is copy-only.** It reads section headings (requirements, nice to have, responsibilities…) and bullets, finds tools from a known list plus acronyms and CamelCase names, and ranks keywords from single words. Two-word phrases count only when they repeat, because one-off pairs were noise ("through planned"). Every keyword must occur in the text. Seniority prefers explicit words ("Senior" beats "Manager").
+
+**AI analysis is grounded.** Requirement lines are kept only when at least 60% of their words come from the job text. Tools, keywords and language hints must appear in it word for word. Unknown enum values become "unspecified".
+
+**Matching cites facts or it's a gap.** The basic matcher compares lightly stemmed content words: 60% or more is strong, 25% or more (or 50% across the top 3 facts) is partial. Filler words like "experience" or "strong" are ignored. The AI matcher's "strong" or "partial" without a valid fact citation is downgraded to a gap, and requirements it skips fall back to the basic result. Only confirmed facts count. A saved match is marked stale when facts or requirements change (fingerprint in `match.basis`).
+
+**Gaps are questions, never guesses.** Must-haves, tools and nice-to-haves that aren't in the facts get "Have you done this?". "Yes" saves the user's own words as a fact on a role they choose, optionally adding the tool as a skill. "I haven't done this" is remembered, never asked again, and that requirement is always a gap. Responsibilities aren't asked about, to keep the list short.
+
+**Tailoring proposes; the user disposes.** Proposals are typed changes (`summary`, `wording`, `order`, `include`) with before/after. Basic mode reorders bullets within each role and the skills by relevance (cited matches weighted by level and kind, plus keyword overlap), and offers to re-show hidden facts that match. AI mode adds rewording (up to 8 bullets) and a summary citing facts. Roles stay chronological, as every region pack expects.
+
+**Truth checks on every rewrite.** A rewrite that adds or changes a number is discarded before the user sees it. New capitalised names, and job-description words the fact didn't use, are flagged ("accept only if true"), as are humanizer errors. "Accept all with no flags" is an explicit action; flagged changes need a decision one by one.
+
+**The base CV is never touched.** Creating the tailored CV copies the base with only accepted changes applied (summary, per-CV wording overrides, order, un-hidden facts), names it "{Role} – {Company}", links it with `base_cv_id`, and makes it the CV for the email. Undecided changes are not applied, and the UI says so.
+
+**Keyword coverage can't be gamed.** A keyword counts only when all its words appear together in a CV line that comes from a fact. The summary is excluded and only fact lines are searched. Uncovered keywords point the user to the gap questions, never to adding words.
+
 ## Phase 3: application email composer (2026-10-20)
 
 **Built before Phase 2, on request.** The spec feeds Phase 3 "the tailored CV"; until Phase 2 exists the user picks any CV from their vault, and a tailored CV will simply be another option. Choosing which facts fit the job is a small, contained ranking (overlap between the job description and each fact on the chosen CV), not the full Phase 2 match view.

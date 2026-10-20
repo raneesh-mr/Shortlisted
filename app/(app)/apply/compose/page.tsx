@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useApp } from "@/components/app-provider";
+import { AnalysisStep } from "@/components/apply/analysis-step";
+import { MatchStep, type GapAnswer } from "@/components/apply/match-step";
+import { TailorStep } from "@/components/apply/tailor-step";
 import { EmailEditor, LintSummary } from "@/components/email-editor";
 import { ReadAloud } from "@/components/read-aloud";
 import { SendPanel } from "@/components/send-panel";
@@ -15,11 +18,26 @@ import { lintDraft, type ComposeResult } from "@/lib/email/compose";
 import type { LintReport } from "@/lib/humanizer/lint";
 import { variants } from "@/lib/email/variants";
 import { MAX_TEXT_CHARS } from "@/lib/import/limits";
-import { emailVariants, newId, nowIso, type Application, type ComposeInputs, type EmailLength, type EmailRecord, type EmailVariant, type Tone } from "@/lib/model";
+import { emailVariants, makeFact, newId, nowIso, type Fact, type Application, type ComposeInputs, type EmailLength, type EmailRecord, type EmailVariant, type Tone } from "@/lib/model";
 import { buildCvDocument } from "@/lib/cv/document";
 import { getRegionPack } from "@/lib/regions";
+import { requirementsOf } from "@/lib/jd/basic";
+import { matchBasis } from "@/lib/jd/match";
+import type { JdAnalysis, MatchItem, MatchResult, TailorChange, TailorDecision } from "@/lib/jd/schema";
+import { applyTailor } from "@/lib/tailor/apply";
 
-type Step = 1 | 2 | 3;
+type Step = 1 | 2 | 3 | 4 | 5 | 6;
+
+/** Resume where the user left off. */
+function initialStep(app: Application | null): Step {
+  if (!app) return 1;
+  if (app.email_id) return 6;
+  if (app.tailor?.tailored_cv_id) return 5;
+  if (app.tailor) return 4;
+  if (app.match) return 3;
+  if (app.jd_analysis) return 2;
+  return 1;
+}
 
 interface Draft {
   emailId: string;
@@ -65,16 +83,17 @@ function Composer() {
   const te = useTranslations("errors");
   const params = useSearchParams();
   const router = useRouter();
-  const { applications, cvs, facts, profile, repo, online, saveApplication } = useApp();
+  const { applications, cvs, facts, profile, repo, online, saveApplication, saveFacts, saveCv } = useApp();
   const id = params.get("id");
   const stored = applications.find((a) => a.id === id) ?? null;
 
   const [app, setApp] = useState<Application | null>(stored);
-  const [step, setStep] = useState<Step>(stored?.email_id ? 3 : 1);
+  const [step, setStep] = useState<Step>(initialStep(stored));
   const [variant, setVariant] = useState<EmailVariant>("apply_direct");
   const [useAi, setUseAi] = useState(true);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [busy, setBusy] = useState(false);
+  const [stepBusy, setStepBusy] = useState(false);
   const [rewriting, setRewriting] = useState<Slot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadedEmail, setLoadedEmail] = useState(false);
@@ -109,7 +128,7 @@ function Composer() {
             edited: e.meta.edited,
             createdAt: e.created_at,
           });
-        } else setStep(1);
+        } else setStep(initialStep({ ...app, email_id: null }));
       })
       .catch(() => setStep(1))
       .finally(() => setLoadedEmail(true));
@@ -158,6 +177,82 @@ function Composer() {
   const setField = (patch: Partial<Application>) => setApp((prev) => (prev ? { ...prev, ...patch } : prev));
   const setInput = (patch: Partial<ComposeInputs>) => setApp((prev) => (prev ? { ...prev, compose: { ...prev.compose, ...patch } } : prev));
   const missing = spec.requires.filter((k) => !String(app.compose[k] ?? "").trim());
+  const base = cvs.find((c) => c.id === app.base_cv_id) ?? null;
+  const tailoredCv = cvs.find((c) => c.id === app.tailor?.tailored_cv_id) ?? null;
+  const matchStale = Boolean(app.match && app.jd_analysis && app.match.basis !== matchBasis(requirementsOf(app.jd_analysis), facts));
+  const mode = useAi ? "ai" : "basic";
+  const post = async <T,>(url: string, body: unknown): Promise<T> =>
+    (await (await apiFetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })).json()) as T;
+
+  async function runStep(fn: () => Promise<void>) {
+    setStepBusy(true);
+    setError(null);
+    try {
+      await fn();
+    } catch (err) {
+      setError(te(errorKey(err)));
+    } finally {
+      setStepBusy(false);
+    }
+  }
+
+  const analyse = () =>
+    runStep(async () => {
+      const analysis = await post<JdAnalysis>("/api/jd/analyze", { mode, jd_text: app.jd_text, title: app.role, company: app.company });
+      // A new analysis invalidates the match and any proposed changes.
+      setField({ jd_analysis: analysis, match: null, tailor: null, role: app.role || analysis.title, company: app.company || analysis.company });
+      setStep(2);
+    });
+
+  const runMatch = (opts: { facts?: Fact[]; gaps?: Application["gaps"]; analysis?: JdAnalysis } = {}) =>
+    runStep(async () => {
+      const analysis = opts.analysis ?? app.jd_analysis;
+      if (!analysis) return;
+      const gaps = opts.gaps ?? app.gaps;
+      const not_done = Object.entries(gaps).filter(([, v]) => v === "not_done").map(([k]) => k);
+      const match = await post<MatchResult>("/api/match", { mode, analysis, facts: opts.facts ?? facts, not_done });
+      setField({ match, gaps });
+      setStep(3);
+    });
+
+  const answerGap = async (item: MatchItem, a: GapAnswer) => {
+    const added: Fact[] = [];
+    if (a.text) added.push(makeFact("achievement", { work_id: a.workId, kind: "responsibility", text: a.text.slice(0, 600) }) as Fact);
+    if (a.asSkill && item.text.length <= 80) added.push(makeFact("skill", { name: item.text }) as Fact);
+    if (!added.length) return;
+    await saveFacts(added);
+    await runMatch({ facts: [...facts, ...added], gaps: { ...app.gaps, [item.key]: "answered" } });
+  };
+  const markNotDone = (item: MatchItem) => void runMatch({ gaps: { ...app.gaps, [item.key]: "not_done" } });
+  const undoNotDone = (item: MatchItem) => {
+    const gaps = { ...app.gaps };
+    delete gaps[item.key];
+    void runMatch({ gaps });
+  };
+
+  const propose = () =>
+    runStep(async () => {
+      if (!base || !app.jd_analysis || !app.match) return;
+      const r = await post<{ method: "ai" | "basic"; changes: TailorChange[] }>("/api/cv/tailor", {
+        mode,
+        jd_text: app.jd_text,
+        cv: { region_id: base.region_id, template_id: base.template_id, content: base.content },
+        facts,
+        analysis: app.jd_analysis,
+        match: app.match,
+      });
+      setField({ tailor: { method: r.method, changes: r.changes, decisions: {}, tailored_cv_id: null } });
+    });
+  const decide = (changeId: string, d: TailorDecision) =>
+    setApp((prev) => (prev?.tailor ? { ...prev, tailor: { ...prev.tailor, decisions: { ...prev.tailor.decisions, [changeId]: d } } } : prev));
+  const createTailored = () =>
+    runStep(async () => {
+      if (!base || !app.tailor) return;
+      const title = [app.role || app.jd_analysis?.title || base.title, app.company].filter(Boolean).join(" – ");
+      const tailored = applyTailor(base, app.tailor.changes, app.tailor.decisions, title);
+      await saveCv(tailored, { snapshot: true });
+      setField({ cv_id: tailored.id, tailor: { ...app.tailor, tailored_cv_id: tailored.id } });
+    });
 
   async function compose(rewriteSlot?: "opener" | "evidence" | "close") {
     if (!app || !cv) return;
@@ -197,7 +292,7 @@ function Composer() {
         edited: rewriteSlot && prev ? prev.edited : false,
         createdAt: rewriteSlot && prev ? prev.createdAt : nowIso(),
       }));
-      setStep(3);
+      setStep(6);
     } catch (err) {
       setError(te(errorKey(err)));
     } finally {
@@ -215,10 +310,13 @@ function Composer() {
     }
   }
 
-  const steps: { n: Step; label: string }[] = [
-    { n: 1, label: t("step1") },
-    { n: 2, label: t("step2") },
-    { n: 3, label: t("step3") },
+  const steps: { n: Step; label: string; enabled: boolean }[] = [
+    { n: 1, label: t("step1"), enabled: true },
+    { n: 2, label: t("step2"), enabled: Boolean(app.jd_analysis) },
+    { n: 3, label: t("step3"), enabled: Boolean(app.match) },
+    { n: 4, label: t("step4"), enabled: Boolean(app.match && base) },
+    { n: 5, label: t("step5"), enabled: Boolean(cv) },
+    { n: 6, label: t("step6"), enabled: Boolean(draft) },
   ];
 
   return (
@@ -229,10 +327,10 @@ function Composer() {
           <li key={s.n}>
             <button
               type="button"
-              disabled={s.n === 3 && !draft}
+              disabled={!s.enabled}
               onClick={() => setStep(s.n)}
               aria-current={step === s.n ? "step" : undefined}
-              className={cx("min-h-11 w-full rounded-lg border text-sm", step === s.n ? "border-accent bg-accent-soft font-semibold" : "border-line text-ink-2", s.n === 3 && !draft && "opacity-50")}
+              className={cx("min-h-11 w-full rounded-lg border text-sm", step === s.n ? "border-accent bg-accent-soft font-semibold" : "border-line text-ink-2", !s.enabled && "opacity-50")}
             >
               {s.n}. {s.label}
             </button>
@@ -280,25 +378,96 @@ function Composer() {
           </div>
           {cvs.length ? (
             <Select
-              label={t("cv")}
-              hint={t("cvHint")}
-              value={app.cv_id ?? ""}
-              onChange={(e) => setField({ cv_id: e.target.value || null })}
-              options={[{ value: "", label: t("chooseCv") }, ...cvs.map((c) => ({ value: c.id, label: c.title }))]}
+              label={t("baseCv")}
+              hint={t("baseCvHint")}
+              value={app.base_cv_id ?? ""}
+              onChange={(e) => {
+                const id = e.target.value || null;
+                // A different starting CV invalidates proposed changes; the email follows the new base until a tailored CV exists.
+                setField({ base_cv_id: id, cv_id: id, tailor: null });
+              }}
+              options={[{ value: "", label: t("chooseCv") }, ...cvs.filter((c) => c.id !== app.tailor?.tailored_cv_id).map((c) => ({ value: c.id, label: c.title }))]}
             />
           ) : (
             <Notice tone="warn" action={<Link href="/cvs" className="font-semibold underline">{t("buildCv")}</Link>}>
               {t("noCv")}
             </Notice>
           )}
-          <Button disabled={!cv} onClick={() => setStep(2)}>
-            {t("next")}
+          <Card>
+            <Switch label={t("aiAll")} hint={t("aiAllHint")} checked={useAi} onChange={setUseAi} />
+          </Card>
+          <Button disabled={!base || !app.jd_text.trim() || stepBusy || !online} onClick={analyse}>
+            {stepBusy ? t("analysing") : app.jd_analysis ? t("analyseAgain") : t("analyse")}
+          </Button>
+          {app.jd_analysis && (
+            <Button variant="secondary" onClick={() => setStep(2)}>
+              {t("keepAnalysis")}
+            </Button>
+          )}
+          <Button variant="ghost" disabled={!cv} onClick={() => setStep(5)}>
+            {t("skipToEmail")}
           </Button>
         </section>
       )}
 
-      {step === 2 && (
+      {step === 2 && app.jd_analysis && (
+        <AnalysisStep
+          analysis={app.jd_analysis}
+          busy={stepBusy}
+          onChange={(jd_analysis) => setField({ jd_analysis })}
+          onReanalyse={analyse}
+          onBack={() => setStep(1)}
+          onNext={() => (app.match && !matchStale ? setStep(3) : void runMatch())}
+        />
+      )}
+
+      {step === 3 && (
+        <MatchStep
+          match={app.match}
+          stale={matchStale}
+          facts={facts}
+          gaps={app.gaps}
+          busy={stepBusy}
+          onAnswer={answerGap}
+          onNotDone={markNotDone}
+          onUndoNotDone={undoNotDone}
+          onRematch={() => void runMatch()}
+          onBack={() => setStep(2)}
+          onNext={() => setStep(4)}
+        />
+      )}
+
+      {step === 4 && base && app.jd_analysis && (
+        <TailorStep
+          base={base}
+          tailored={tailoredCv}
+          facts={facts}
+          analysis={app.jd_analysis}
+          state={app.tailor}
+          busy={stepBusy}
+          onPropose={propose}
+          onDecide={decide}
+          onCreate={createTailored}
+          onSkip={() => {
+            setField({ cv_id: base.id });
+            setStep(5);
+          }}
+          onBack={() => setStep(3)}
+          onNext={() => setStep(5)}
+        />
+      )}
+
+      {step === 5 && (
         <section className="flex flex-col gap-4">
+          {cvs.length > 0 && (
+            <Select
+              label={t("emailCv")}
+              hint={t("emailCvHint")}
+              value={app.cv_id ?? ""}
+              onChange={(e) => setField({ cv_id: e.target.value || null })}
+              options={cvs.map((c) => ({ value: c.id, label: c.id === app.tailor?.tailored_cv_id ? `${c.title} (${t("tailoredTag")})` : c.title }))}
+            />
+          )}
           <fieldset>
             <legend className="mb-2 font-semibold">{t("variantTitle")}</legend>
             <div className="grid gap-2">
@@ -374,7 +543,7 @@ function Composer() {
           )}
           {missing.length > 0 && <Notice tone="warn">{t("missing")}</Notice>}
           <div className="flex gap-3">
-            <Button variant="secondary" onClick={() => setStep(1)}>
+            <Button variant="secondary" onClick={() => setStep(app.jd_analysis ? 4 : 1)}>
               {t("back")}
             </Button>
             <Button className="flex-1" disabled={busy || missing.length > 0 || !online || !cv} onClick={() => compose()}>
@@ -385,8 +554,8 @@ function Composer() {
         </section>
       )}
 
-      {step === 3 && !draft && !loadedEmail && <Spinner label={t("loading")} />}
-      {step === 3 && draft && lint && (
+      {step === 6 && !draft && !loadedEmail && <Spinner label={t("loading")} />}
+      {step === 6 && draft && lint && (
         <section className="flex flex-col gap-4">
           <Notice>
             {draft.method === "ai" ? t("madeAi") : t("madeBasic")} {draft.regenerated ? t("regenerated") : ""}
@@ -417,7 +586,7 @@ function Composer() {
           </Card>
           <div className="flex flex-wrap gap-2">
             <ReadAloud text={`${draft.subject}. ${bodyText(draft.paragraphs)}`} lang={profile?.spelling ?? pack.spelling} />
-            <Button variant="ghost" onClick={() => setStep(2)}>
+            <Button variant="ghost" onClick={() => setStep(5)}>
               {t("changeDetails")}
             </Button>
           </div>

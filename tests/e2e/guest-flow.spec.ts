@@ -1,5 +1,27 @@
 import { expect, test, type Page } from "@playwright/test";
 
+const JOB_AD = `Senior Facilities Manager
+About Marina Living
+We manage residential towers across Dubai Marina.
+
+Key responsibilities
+- Lead a team of technicians across residential towers
+- Reduce reactive maintenance through planned preventive maintenance
+
+Requirements
+- 5+ years of facilities management experience
+- Hands-on experience with CAFM systems
+- Strong budgeting skills
+
+Nice to have
+- IOSH or NEBOSH certification
+- Experience with Yardi
+
+Benefits
+- Annual flights home
+
+Marina Living is an equal opportunity employer, regardless of race, religion or gender.`;
+
 const SAMPLE_CV = `Amira Haddad
 amira@example.com | +971 50 000 0000
 
@@ -151,23 +173,57 @@ test("guest: compose an application email (basic mode), check it, send it", asyn
   await page.getByRole("button", { name: "Start an application" }).click();
   await expect(page).toHaveURL(/\/apply\/compose\?id=/);
 
-  // Step 1: the job.
+  // Step 1: the job. AI off for the whole application (no key in tests).
   await page.getByLabel("Job title").fill("Facilities Manager");
   await page.getByLabel("Company").fill("Marina Living");
-  await page.getByLabel("Job description").fill("Lead a team of technicians and reduce reactive maintenance across residential towers. CAFM experience preferred.");
-  await page.getByRole("button", { name: "Next" }).click();
+  await page.getByLabel("Job description").fill(JOB_AD);
+  const aiAll = page.getByRole("switch", { name: /use ai for this application/i });
+  await aiAll.click();
+  await expect(aiAll).toHaveAttribute("aria-checked", "false");
+  await page.getByRole("button", { name: "Analyse the job" }).click();
 
-  // Step 2: details. Referral needs a referrer before it can be written.
+  // Step 2: analysis, editable, with boilerplate set aside (not deleted).
+  await expect(page.getByText("It follows headings and bullet points", { exact: false })).toBeVisible();
+  await expect(page.getByText("Hands-on experience with CAFM systems")).toBeVisible();
+  await expect(page.getByText(/Set aside: 2 blocks of boilerplate/)).toBeVisible();
+  await page.getByRole("button", { name: "Check my facts against it" }).click();
+
+  // Step 3: match, with cited facts, and gap questions.
+  await expect(page.getByText(/\d+ strong · \d+ partial · \d+ gaps?/)).toBeVisible();
+  const iosh = page.getByRole("listitem").filter({ hasText: "IOSH or NEBOSH certification" });
+  await iosh.getByRole("button", { name: "I haven't done this" }).click();
+  await expect(iosh.getByText("You said you haven't done this", { exact: false })).toBeVisible();
+  const yardi = page.getByRole("listitem").filter({ hasText: "Experience with Yardi" });
+  await yardi.getByRole("button", { name: "Yes, I have" }).click();
+  await yardi.getByLabel(/Where and how/).fill("Used Yardi to track service charge collections");
+  await yardi.getByLabel("Which role was this in?").selectOption({ index: 1 });
+  await yardi.getByRole("button", { name: "Save as a fact" }).click();
+  await expect(page.getByRole("listitem").filter({ hasText: "Experience with Yardi" }).getByText("From your facts:", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: "Suggest changes to my CV" }).click();
+
+  // Step 4: tailor. Accept clean suggestions and create a tailored copy, or carry on if none are needed.
+  await page.getByRole("button", { name: "Suggest changes", exact: true }).click();
+  await expect(page.getByText("Basic suggestions", { exact: false })).toBeVisible();
+  const acceptClean = page.getByRole("button", { name: /Accept the \d+ changes? with no flags/ });
+  if (await acceptClean.isVisible()) {
+    await acceptClean.click();
+    await page.getByRole("button", { name: /Create tailored CV/ }).click();
+    await expect(page.getByText("Tailored CV created")).toBeVisible();
+    console.log("[e2e] tailored CV created");
+    await page.getByRole("button", { name: "Next: email details" }).click();
+  } else {
+    await expect(page.getByText("No changes needed", { exact: false })).toBeVisible();
+    await page.getByRole("button", { name: "Skip, use my CV as it is" }).click();
+  }
+
+  // Step 5: details. Referral needs a referrer before it can be written.
   await page.getByRole("radio", { name: /Referral/ }).check();
   await expect(page.getByRole("button", { name: "Write my email" })).toBeDisabled();
   await page.getByRole("radio", { name: /Apply directly/ }).check();
   await page.getByLabel(/Recipient's name/).fill("Sara Khan");
   await page.getByLabel(/Recipient's email/).fill("sara@example.com");
   await page.getByLabel("Tone").selectOption("warm");
-  const aiSwitch = page.getByRole("switch", { name: /use ai to word it/i });
-  await expect(aiSwitch).toHaveAttribute("aria-checked", "true");
-  await aiSwitch.click();
-  await expect(aiSwitch).toHaveAttribute("aria-checked", "false");
+  await expect(page.getByRole("switch", { name: /use ai to word it/i })).toHaveAttribute("aria-checked", "false");
   await page.getByRole("button", { name: "Write my email" }).click();
 
   // Step 3: the email, built only from confirmed facts.
@@ -192,7 +248,8 @@ test("guest: compose an application email (basic mode), check it, send it", asyn
   await page.getByRole("button", { name: "Download as .eml" }).click();
   expect((await eml).suggestedFilename()).toMatch(/\.eml$/);
   const pdf = page.waitForEvent("download");
-  await page.getByRole("button", { name: /Download "Imported CV" as PDF/ }).click();
+  // The email uses the tailored CV when one was created, otherwise the imported one.
+  await page.getByRole("button", { name: /Download "(Imported CV|Facilities Manager – Marina Living)" as PDF/ }).click();
   expect((await pdf).suggestedFilename()).toMatch(/\.pdf$/);
 
   await page.getByRole("button", { name: "I've sent it" }).click();

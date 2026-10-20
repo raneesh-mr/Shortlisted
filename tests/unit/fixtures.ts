@@ -34,3 +34,31 @@ export function sampleFacts(): Fact[] {
 export function cvFor(country: string): Cv {
   return newCv("Test CV", { ...emptyProfile, home_country: country, target_country: country });
 }
+
+/** A realistic job description with sections, tools, benefits and equal-opportunity text. */
+export const JD = `Senior Facilities Manager
+About Marina Living
+We manage residential towers across Dubai Marina.
+
+Location: Dubai, UAE (hybrid)
+
+Key responsibilities
+- Lead a team of technicians across residential towers
+- Reduce reactive maintenance through planned preventive maintenance
+- Manage contractor schedules and service agreements
+
+Requirements
+- 5+ years of facilities management experience
+- Hands-on experience with CAFM systems
+- Strong budgeting skills
+- Fluent English; Arabic is a plus
+
+Nice to have
+- IOSH or NEBOSH certification
+- Experience with Yardi
+
+Benefits
+- Annual flights home
+- Health insurance
+
+Marina Living is an equal opportunity employer and does not discriminate regardless of race, religion or gender.`;
