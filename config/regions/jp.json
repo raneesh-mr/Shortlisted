@@ -27,7 +27,7 @@
   "references": "omit_on_request_only",
   "email_tone": "formal",
   "support": "partial",
-  "support_note": "Japanese employers often require a rirekisho and shokumu keirekisho in a fixed Japanese format. Landed does not build those yet. This pack builds an English resume for international employers in Japan.",
+  "support_note": "Japanese employers often require a rirekisho and shokumu keirekisho in a fixed Japanese format. This app does not build those yet. This pack builds an English resume for international employers in Japan.",
   "notes": [
     "Visa status matters for most roles in Japan.",
     "Japanese language level (for example JLPT N2) is worth listing."

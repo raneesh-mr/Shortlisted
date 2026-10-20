@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { brand } from "@/config/brand";
 import { spellings, type Spelling } from "@/config/regions/schema";
 import { consentTexts, type ConsentPurpose } from "@/config/consents";
 import { GUEST_FLAG, useApp } from "@/components/app-provider";
-import { CountrySelect, RegionSummary } from "@/components/region";
+import { CountrySelect, DISMISS_KEY, RegionSummary } from "@/components/region";
 import { Button, Card, Notice, PageHeader, Select, Switch, TextArea, TextInput } from "@/components/ui";
 import { DELETE_PHRASE } from "@/lib/account";
 import { apiFetch, downloadBlob, errorKey } from "@/lib/client-api";
@@ -20,6 +21,7 @@ import { getBrowserSupabase } from "@/lib/supabase/client";
 import { buildVoiceProfile } from "@/lib/voice/profile";
 
 type Theme = "system" | "light" | "dark";
+const THEME_KEY = `${brand.slug}_theme`;
 
 export default function Me() {
   const t = useTranslations("me");
@@ -35,7 +37,7 @@ export default function Me() {
 
   useEffect(() => {
     repo?.listConsents().then(setConsents).catch(() => setConsents([]));
-    const saved = localStorage.getItem("landed_theme");
+    const saved = localStorage.getItem(THEME_KEY);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (saved === "light" || saved === "dark") setTheme(saved);
   }, [repo]);
@@ -48,10 +50,10 @@ export default function Me() {
   function applyTheme(next: Theme) {
     setTheme(next);
     if (next === "system") {
-      localStorage.removeItem("landed_theme");
+      localStorage.removeItem(THEME_KEY);
       delete document.documentElement.dataset.theme;
     } else {
-      localStorage.setItem("landed_theme", next);
+      localStorage.setItem(THEME_KEY, next);
       document.documentElement.dataset.theme = next;
     }
   }
@@ -70,7 +72,7 @@ export default function Me() {
         ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(await repo!.exportAll()) }
         : { method: "POST" };
       const res = await apiFetch("/api/account/export", init);
-      downloadBlob(await res.blob(), `landed-export-${new Date().toISOString().slice(0, 10)}.zip`);
+      downloadBlob(await res.blob(), `${brand.slug}-export-${new Date().toISOString().slice(0, 10)}.zip`);
     } catch (err) {
       setError(te(errorKey(err)));
     } finally {
@@ -95,7 +97,7 @@ export default function Me() {
         await RemoteRepo.clearCache(user!.id);
         await getBrowserSupabase()?.auth.signOut({ scope: "local" });
       }
-      localStorage.removeItem("landed_region_banner_dismissed");
+      localStorage.removeItem(DISMISS_KEY);
       // Full reload so no in-memory copy of the deleted data survives.
       window.location.replace("/?deleted=1");
     } catch (err) {

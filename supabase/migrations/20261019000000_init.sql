@@ -1,4 +1,4 @@
--- Landed: initial schema. Every table has RLS; users can only touch their own rows.
+-- Shortlisted: initial schema. Every table has RLS; users can only touch their own rows.
 -- Deleting the auth user cascades to every personal row.
 -- gen_random_uuid() is built into Postgres 13+, so no extension is needed.
 

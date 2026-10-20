@@ -1,6 +1,6 @@
-// Landed service worker: offline app shell + static assets.
+// Shortlisted service worker: offline app shell + static assets.
 // Personal data is never cached here; offline CV viewing uses IndexedDB in the app.
-const VERSION = "landed-v1";
+const VERSION = "shortlisted-v1";
 const SHELL = ["/", "/home", "/cvs", "/me", "/offline"];
 
 self.addEventListener("install", (event) => {

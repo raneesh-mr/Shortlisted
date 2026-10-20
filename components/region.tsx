@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { brand } from "@/config/brand";
 import type { RegionPack } from "@/config/regions/schema";
 import { countryCodes, countryName } from "@/lib/geo";
 import { regionForCountry } from "@/lib/regions";
@@ -75,7 +76,7 @@ export function RegionSummary({ pack }: { pack: RegionPack }) {
   );
 }
 
-const DISMISS_KEY = "landed_region_banner_dismissed";
+export const DISMISS_KEY = `${brand.slug}_region_banner_dismissed`;
 
 /** "Looks like you're in X. CV style set to Y. Change" */
 export function RegionBanner() {

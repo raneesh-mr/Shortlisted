@@ -1,8 +1,8 @@
-﻿# Landed
+﻿# Shortlisted
 
 A free, mobile-first web app that turns a job seeker's real experience into a clear CV and a short, human application email for a specific job. International by design: CV conventions come from region packs, not code.
 
-Hosted at `landed.realplannet.com` on Cloudflare Workers. Brand name, URL and colours live in [`config/brand.ts`](config/brand.ts) and env vars.
+Hosted at `shortlisted.realplannet.com` on Cloudflare Workers. Brand name, URL and colours live in [`config/brand.ts`](config/brand.ts) and env vars.
 
 **Status: Phase 1 and Phase 3 built.** Phase 1: foundation, auth, facts, CV import, builder, export and vault. Phase 3: the application email composer. Phase 2 (CV tailoring) is next. See [DECISIONS.md](DECISIONS.md) and [COMPLIANCE.md](COMPLIANCE.md).
 
@@ -43,19 +43,19 @@ Locally, `.env.local` serves `npm run dev`, and `.dev.vars` (copy `.dev.vars.exa
 
 ### Deploy (Cloudflare Workers)
 
-Landed runs on Cloudflare Workers through the [OpenNext adapter](https://opennext.js.org/cloudflare), alongside realplannet.com on the same account. Config: [`wrangler.jsonc`](wrangler.jsonc), [`open-next.config.ts`](open-next.config.ts).
+Shortlisted runs on Cloudflare Workers through the [OpenNext adapter](https://opennext.js.org/cloudflare), alongside realplannet.com on the same account. Config: [`wrangler.jsonc`](wrangler.jsonc), [`open-next.config.ts`](open-next.config.ts).
 
 1. **Plan:** Workers Paid (US$5/month) is required. The Worker is about 3.7 MB gzipped (free limit 3 MB), and PDF generation needs more CPU per request than the free plan allows.
 2. **Login:** `npx wrangler login`.
-3. **Public settings (baked in at build time):** put `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL=https://landed.realplannet.com` and `NEXT_PUBLIC_BRAND_NAME` in `.env.production.local`. If you use Cloudflare's Git builds, set them as build variables instead.
+3. **Public settings (baked in at build time):** put `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL=https://shortlisted.realplannet.com` and `NEXT_PUBLIC_BRAND_NAME` in `.env.production.local`. If you use Cloudflare's Git builds, set them as build variables instead.
 4. **Secrets (runtime, never in files):**
    ```bash
    npx wrangler secret put ANTHROPIC_API_KEY
    npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
    ```
    `LLM_MODEL` is a plain var in `wrangler.jsonc`.
-5. **Deploy:** `npm run deploy`. This attaches the custom domain `landed.realplannet.com` from `wrangler.jsonc`, creating the DNS record and certificate. It requires the realplannet.com zone to be in the same Cloudflare account and no existing `landed` DNS record.
-6. **Supabase:** add `https://landed.realplannet.com/auth/callback` to the auth redirect allow-list.
+5. **Deploy:** `npm run deploy`. This attaches the custom domain `shortlisted.realplannet.com` from `wrangler.jsonc`, creating the DNS record and certificate. It requires the realplannet.com zone to be in the same Cloudflare account and no existing `shortlisted` DNS record.
+6. **Supabase:** add `https://shortlisted.realplannet.com/auth/callback` to the auth redirect allow-list.
 
 Test locally in the real Workers runtime with `npm run preview`. Prefer deploying from Linux (WSL, or Cloudflare Workers Builds connected to Git): OpenNext warns that Windows builds can fail unpredictably.
 

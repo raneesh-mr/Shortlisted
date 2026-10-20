@@ -1,3 +1,5 @@
+import { brand } from "@/config/brand";
+
 /** Country detection helpers. Detection is a hint only; the user can always override. */
 
 const ISO2 = /^[A-Z]{2}$/;
@@ -25,7 +27,7 @@ export function countryFromAcceptLanguage(header: string | null): string | null 
   return null;
 }
 
-export const GEO_COOKIE = "landed_geo";
+export const GEO_COOKIE = `${brand.slug}_geo`;
 
 /** ISO 3166-1 alpha-2 codes offered in country pickers. Names come from Intl.DisplayNames. */
 export const countryCodes = (

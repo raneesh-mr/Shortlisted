@@ -1,3 +1,4 @@
+import { brand } from "@/config/brand";
 import { clear, createStore, del, get, set, type UseStore } from "idb-keyval";
 import {
   emptyProfile,
@@ -18,7 +19,7 @@ export class LocalRepo implements Repo {
   readonly kind = "guest" as const;
   private store: UseStore;
 
-  constructor(dbName = "landed-guest") {
+  constructor(dbName = `${brand.slug}-guest`) {
     this.store = createStore(dbName, "kv");
   }
 

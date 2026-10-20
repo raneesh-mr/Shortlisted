@@ -1,7 +1,8 @@
+import { brand } from "@/config/brand";
 import { consentTexts, type ConsentPurpose } from "@/config/consents";
 import { nowIso, type Consent } from "@/lib/model";
 
-const PENDING_KEY = "landed_pending_consent";
+const PENDING_KEY = `${brand.slug}_pending_consent`;
 
 export function consentRecord(purpose: ConsentPurpose, granted: boolean): Consent {
   return { purpose, text_version: consentTexts[purpose].version, granted, granted_at: nowIso() };

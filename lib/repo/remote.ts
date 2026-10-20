@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { brand } from "@/config/brand";
 import { createStore, get, set, type UseStore } from "idb-keyval";
 import {
   applicationSchema,
@@ -47,7 +48,7 @@ export class RemoteRepo implements Repo {
     /** Called when a read fell back to the offline copy. */
     private readonly onStale: () => void = () => {},
   ) {
-    this.cache = createStore(`landed-cache-${userId}`, "kv");
+    this.cache = createStore(`${brand.slug}-cache-${userId}`, "kv");
   }
 
   private async cached<T>(key: string, load: () => Promise<T>): Promise<T> {
@@ -66,7 +67,7 @@ export class RemoteRepo implements Repo {
   /** Removes the offline copy (sign-out and account deletion). */
   static async clearCache(userId: string) {
     const { clear } = await import("idb-keyval");
-    await clear(createStore(`landed-cache-${userId}`, "kv"));
+    await clear(createStore(`${brand.slug}-cache-${userId}`, "kv"));
   }
 
   private check<T>(res: { data: T; error: { message: string } | null }): T {

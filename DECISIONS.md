@@ -82,7 +82,7 @@ Sensible defaults chosen during the build, with the reason. Revisit any of them 
 
 ## Hosting on Cloudflare (2026-10-20)
 
-**Cloudflare Workers via OpenNext (`@opennextjs/cloudflare`)**, to sit with realplannet.com on one provider. The custom domain `landed.realplannet.com` is declared in `wrangler.jsonc`.
+**Cloudflare Workers via OpenNext (`@opennextjs/cloudflare`)**, to sit with realplannet.com on one provider. The custom domain `shortlisted.realplannet.com` is declared in `wrangler.jsonc`.
 
 **No `proxy.ts` (middleware).** OpenNext's Node.js middleware support on Cloudflare is experimental and failed to bundle. Nothing needed it: the browser Supabase client refreshes sessions itself, server routes refresh through `getClaims()`, and the country hint moved to `GET /api/geo`, which the app calls once and caches in a cookie.
 

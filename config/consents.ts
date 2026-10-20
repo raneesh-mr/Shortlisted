@@ -1,11 +1,13 @@
+import { brand } from "./brand";
+
 /**
  * Versioned consent texts. When wording changes, bump the version so that
  * every logged consent row records exactly what the person agreed to.
  */
 export const consentTexts = {
   core: {
-    version: "core-2026-10-19",
-    text: "I agree that Landed stores the details I enter so it can build my CVs and emails. My data is never sold, shared or used to train AI models, and I can export or delete it at any time.",
+    version: "core-2026-10-20",
+    text: `I agree that ${brand.name} stores the details I enter so it can build my CVs and emails. My data is never sold, shared or used to train AI models, and I can export or delete it at any time.`,
   },
   email_updates: {
     version: "email-2026-10-19",

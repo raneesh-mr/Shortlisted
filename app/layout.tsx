@@ -28,7 +28,7 @@ export const viewport: Viewport = {
 };
 
 // Applies a saved light/dark choice before first paint to avoid a flash.
-const themeScript = `try{var t=localStorage.getItem("landed_theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+const themeScript = `try{var t=localStorage.getItem("${brand.slug}_theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   const locale = defaultLocale;

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { brand } from "@/config/brand";
 import { GEO_COOKIE } from "@/lib/geo";
 import type { Application, Cv, Fact, Profile } from "@/lib/model";
 import { LocalRepo } from "@/lib/repo/local";
@@ -9,7 +10,7 @@ import type { Repo } from "@/lib/repo/types";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 
 type Status = "loading" | "signed_out" | "ready";
-export const GUEST_FLAG = "landed_mode";
+export const GUEST_FLAG = `${brand.slug}_mode`;
 
 interface AppState {
   status: Status;

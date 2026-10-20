@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "landed",
+  "name": "shortlisted",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-10-19",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -8,9 +8,9 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
-  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "landed" }],
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "shortlisted" }],
   // Served on the Real Plannet zone. The zone must be in the same Cloudflare account.
-  "routes": [{ "pattern": "landed.realplannet.com", "custom_domain": true }],
+  "routes": [{ "pattern": "shortlisted.realplannet.com", "custom_domain": true }],
   // Non-secret settings. Secrets (ANTHROPIC_API_KEY, SUPABASE_SERVICE_ROLE_KEY) are set
   // with `wrangler secret put`, never here. NEXT_PUBLIC_* values are baked in at build
   // time from .env.production.local.
