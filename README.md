@@ -22,6 +22,10 @@ Without Supabase keys the app runs in **guest mode only** (data in the browser).
 
 ### Supabase
 
+**Production project:** `shortlisted-prod` (ref `bqykhrbcrdpnwghaasfv`, region Mumbai `ap-south-1`). All migrations are applied and the security advisor is clean. `.env.local` holds its public URL and publishable key; add the secret keys yourself.
+
+For a new project:
+
 1. Create a project. In **Authentication â†’ Providers**, enable Email (magic link) and Google.
 2. In **Authentication â†’ URL configuration**, set the Site URL to your app URL and add `https://<your-domain>/auth/callback` (and `http://localhost:3000/auth/callback`) to the redirect allow-list.
 3. Apply the schema: `npx supabase link --project-ref <ref>` then `npx supabase db push` (or paste `supabase/migrations/*.sql` into the SQL editor).

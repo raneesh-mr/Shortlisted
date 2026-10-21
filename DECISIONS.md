@@ -155,3 +155,15 @@ The spec says "do not build now, only leave seams". These are the extension poin
 **Build on Linux for production.** OpenNext warns that Windows builds may fail unpredictably, and Windows also blocked its symlinks for `serverExternalPackages` (now removed; the libraries are bundled). Local Windows builds, preview and the Workers end-to-end run all passed. Use WSL or Cloudflare Workers Builds for real deploys.
 
 **Both runtimes are tested.** `npm run test:e2e` runs on Node, and `E2E_TARGET=workers npm run test:e2e` runs the same flows inside workerd, including PDF and DOCX export and importing each format twice.
+
+## Supabase project (2026-10-21)
+
+**`shortlisted-prod` in Mumbai (ap-south-1).** This is closest to the Gulf and India, the first markets, and matches the existing makemycv project. EU and UK users are covered by standard contractual clauses (see COMPLIANCE.md). Moving region later means a full data migration.
+
+**Policies are tightened with ALTER POLICY, never drop and create.** The first attempt used `drop policy` and was declined at the confirmation step. Rewriting with `alter policy` gives identical rules, deletes nothing, and never leaves a gap where a rule is missing. The repo migrations were updated to match and re-tested before applying.
+
+**Hardening from the advisors** (migration `20261021000100`). The signup trigger function can't be called through the API. The ownership helpers live in a non-exposed `private` schema; policies reference them by identity, so they keep working, as the RLS tests confirm. Indexes cover every foreign key. After this, the security advisor reports nothing.
+
+**Publishable key, not the legacy anon key.** `sb_publishable_…` is Supabase's recommended client key and can be rotated independently. The variable is still named `NEXT_PUBLIC_SUPABASE_ANON_KEY` for compatibility.
+
+**Live RLS check.** A rolled-back in-database test with temporary users was declined, so live isolation is verified by `npm run verify:rls` once the service role key is in `.env.local`. The same migrations pass the PGlite RLS suite, and an anonymous read-only probe of the live API returns no rows.
