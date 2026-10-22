@@ -1,14 +1,14 @@
-﻿# Shortlisted
+# Shortlisted
 
-A free, mobile-first web app that turns a job seeker's real experience into a clear CV and a short, human application email for a specific job. International by design: CV conventions come from region packs, not code.
+A mobile-first web app that turns a job seeker's real experience into a clear CV and a short, human application email for a specific job. International by design: CV conventions come from region packs, not code.
 
 Hosted at `shortlisted.realplannet.com` on Cloudflare Workers. Brand name, URL and colours live in [`config/brand.ts`](config/brand.ts) and env vars.
 
-**Status: Phases 1–4 built; Phase 5 has seams only (by design).** Phase 1: foundation, auth, facts, CV import, builder, export and vault. Phase 2: job description analysis, match and gap questions, and tailored CVs from approved changes. Phase 3: the application email composer. Phase 4: the tracker with follow-up reminders and a job-posting checker. Phase 5 extras (career snapshot, referrals, payments, more UI languages, analytics) have documented seams in `config/features.ts`, `lib/payments`, `lib/analytics.ts` and DECISIONS.md. See [DECISIONS.md](DECISIONS.md) and [COMPLIANCE.md](COMPLIANCE.md).
+**Status: live product flow plus Phases 1–4; Phase 5 has seams only.** The front door (`/`) is the quick flow: upload a CV and a job ad, get a tailored CV in about a minute, review it with one tap, then pay ₹199 (GST included) to download PDF + Word. Previews are free; downloads are paid per CV through Razorpay and need an account. Phase 1: foundation, auth, facts, CV import, builder, export and vault. Phase 2: job description analysis, match and gap questions, and tailored CVs from approved changes. Phase 3: the application email composer. Phase 4: the tracker with follow-up reminders and a job-posting checker. Phase 5 extras (career snapshot, referrals, more UI languages, analytics) have documented seams in `config/features.ts`, `lib/analytics.ts` and DECISIONS.md. See [DECISIONS.md](DECISIONS.md) and [COMPLIANCE.md](COMPLIANCE.md).
 
 ## Stack
 
-Next.js 16 (App Router, Turbopack, Cache Components) on Cloudflare Workers via OpenNext Â· TypeScript strict Â· Tailwind CSS 4 Â· Supabase (Auth + Postgres with RLS) Â· Anthropic API (server only) Â· `docx` + `pdf-lib` Â· Zod Â· next-intl Â· Vitest Â· Playwright.
+Next.js 16 (App Router, Turbopack, Cache Components) on Cloudflare Workers via OpenNext · TypeScript strict · Tailwind CSS 4 · Supabase (Auth + Postgres with RLS) · Anthropic API (server only) · `docx` + `pdf-lib` · Zod · next-intl · Vitest · Playwright.
 
 ## Setup
 
@@ -26,8 +26,8 @@ Without Supabase keys the app runs in **guest mode only** (data in the browser).
 
 For a new project:
 
-1. Create a project. In **Authentication â†’ Providers**, enable Email (magic link) and Google.
-2. In **Authentication â†’ URL configuration**, set the Site URL to your app URL and add `https://<your-domain>/auth/callback` (and `http://localhost:3000/auth/callback`) to the redirect allow-list.
+1. Create a project. In **Authentication → Providers**, enable Email (magic link) and Google.
+2. In **Authentication → URL configuration**, set the Site URL to your app URL and add `https://<your-domain>/auth/callback` (and `http://localhost:3000/auth/callback`) to the redirect allow-list.
 3. Apply the schema: `npx supabase link --project-ref <ref>` then `npx supabase db push` (or paste `supabase/migrations/*.sql` into the SQL editor).
 4. Check isolation on the live project: `npm run verify:rls` (creates two throwaway users and deletes them afterwards).
 
@@ -40,6 +40,9 @@ For a new project:
 | `SUPABASE_SERVICE_ROLE_KEY` | Worker secret | Account deletion and `verify:rls`. Never expose. |
 | `ANTHROPIC_API_KEY` | Worker secret | AI CV import |
 | `LLM_MODEL` | `wrangler.jsonc` var | Model id, default `claude-opus-5-5` |
+| `RAZORPAY_KEY_ID` | Worker secret | Razorpay key id (sent to Checkout by `/api/pay/order`) |
+| `RAZORPAY_KEY_SECRET` | Worker secret | Creates orders, verifies checkout signatures |
+| `RAZORPAY_WEBHOOK_SECRET` | Worker secret | Verifies `/api/pay/webhook` |
 | `NEXT_PUBLIC_APP_URL` | build-time, public | Canonical URL (metadata) |
 | `NEXT_PUBLIC_BRAND_NAME` | build-time, public | Product name |
 | `NEXT_PUBLIC_CAREER_BLUEPRINT_URL` | build-time, public | Optional. Shows the Career snapshot link in Me |
@@ -57,10 +60,14 @@ Shortlisted runs on Cloudflare Workers through the [OpenNext adapter](https://op
    ```bash
    npx wrangler secret put ANTHROPIC_API_KEY
    npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+   npx wrangler secret put RAZORPAY_KEY_ID
+   npx wrangler secret put RAZORPAY_KEY_SECRET
+   npx wrangler secret put RAZORPAY_WEBHOOK_SECRET
    ```
    `LLM_MODEL` is a plain var in `wrangler.jsonc`.
 5. **Deploy:** `npm run deploy`. This attaches the custom domain `shortlisted.realplannet.com` from `wrangler.jsonc`, creating the DNS record and certificate. It requires the realplannet.com zone to be in the same Cloudflare account and no existing `shortlisted` DNS record.
 6. **Supabase:** add `https://shortlisted.realplannet.com/auth/callback` to the auth redirect allow-list.
+7. **Razorpay:** add a webhook to `https://shortlisted.realplannet.com/api/pay/webhook` with events `payment.captured`, `order.paid` and `payment.failed`, and put its secret in `RAZORPAY_WEBHOOK_SECRET`. Test with `rzp_test_` keys first, then swap in live keys.
 
 Test locally in the real Workers runtime with `npm run preview`. Prefer deploying from Linux (WSL, or Cloudflare Workers Builds connected to Git): OpenNext warns that Windows builds can fail unpredictably.
 

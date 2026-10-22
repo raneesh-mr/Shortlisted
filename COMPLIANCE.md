@@ -24,7 +24,10 @@ What is implemented for GDPR, UK GDPR and India's DPDP Act 2023, as of Phase 1. 
 | Referential ownership | Rows can only reference the user's own applications, CVs and emails (RLS with-check helpers) | migration `20261020000100`, `tests/unit/rls.test.ts` |
 | Guest mode | Data stays in the browser (IndexedDB). Nothing is sent unless the user exports or migrates | `lib/repo/local.ts` |
 | No dark patterns | No pre-ticked boxes, countdowns or fake scarcity. Destructive actions confirmed inline | UI |
-| Processors | Supabase (DB and auth), Cloudflare (hosting), Anthropic (AI, only when used). Listed in the notice | privacy page |
+| Processors | Supabase (DB and auth), Cloudflare (hosting), Anthropic (AI, only when used), Razorpay (payments). Listed in the notice | privacy page |
+| Payments | Card/UPI/bank details go to Razorpay only. We store order id, payment id, amount, status and dates. Users can read their own purchases; only the server writes them | `lib/pay`, migration `20261022000100`, `tests/unit/rls.test.ts` |
+| Tax records vs erasure | Deleting an account sets `purchases.user_id` to null: the record (amount, date, order reference) stays for GST, unlinked from the person | migration `20261022000100`, privacy page |
+| Prices and refunds | Price shown with GST included before checkout, with the GST amount; refund policy and terms on the privacy page | `app/quick/pay`, `app/privacy#refunds` |
 | Location | Country is a suggestion from Cloudflare's `cf-ipcountry` header or Accept-Language, kept as a cookie hint, always overridable. The IP is not stored | `app/api/geo`, `lib/geo.ts` |
 
 ## Before launch (not yet done)
@@ -32,6 +35,8 @@ What is implemented for GDPR, UK GDPR and India's DPDP Act 2023, as of Phase 1. 
 - Data Processing Agreements with Supabase, Cloudflare and Anthropic. Pick the EU region for Supabase if most users are EU or UK.
 - Record of processing activities (GDPR Art. 30) and a short DPIA covering AI CV parsing.
 - Named grievance officer contact for DPDP (India) on the privacy page.
+- GST tax invoices for each payment (Razorpay doesn't issue them): set up Zoho Books, or invoice from the webhook. The pay screen says "Tax invoice emailed".
+- Data Processing Agreement with Razorpay; have the refund policy and terms reviewed.
 - Breach notification runbook (72 hours under GDPR).
 - Retention rule for accounts inactive for a long period (proposal: warn at 24 months, delete at 25).
 - Cookie notice is not needed today: only strictly necessary auth and preference cookies are set, with no analytics or advertising. Re-check when Phase 5 analytics arrives.

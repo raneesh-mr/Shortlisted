@@ -56,11 +56,11 @@ Sensible defaults chosen during the build, with the reason. Revisit any of them 
 
 The spec says "do not build now, only leave seams". These are the extension points; none of them changes behaviour today.
 
-**Feature flags** (`config/features.ts`). `referrals`, `payments` and `analytics` are `false`, and a test fails if any of them is switched on without a matching change.
+**Feature flags** (`config/features.ts`). `referrals` and `analytics` are `false`, and a test fails if either is switched on without a matching change. `payments` is now live (see "Quick flow and paid downloads").
 
 **Career snapshot.** Set `NEXT_PUBLIC_CAREER_BLUEPRINT_URL` and a card appears in Me linking out to Real Plannet's Career Blueprint. It's a plain link; nothing is shared. A later integration should pass data only with an explicit, separately consented export.
 
-**Paid extras (Razorpay).** `lib/payments/types.ts` defines `Plan`, `CheckoutSession` and `PaymentProvider` (create order, verify webhook signature). The ground rules are written into it: server-only keys, signature-verified webhooks, an `entitlements` table under RLS, free features stay free, no countdowns or scarcity copy. `plans` is empty.
+**Paid extras (Razorpay).** Superseded: built as paid CV downloads (see below). The seam's ground rules held: server-only keys, signature-verified webhooks, a purchases table under RLS, no countdowns or scarcity copy.
 
 **Referral credits.** Not built. Plan: a `referral_codes` table (user_id, code) and `referral_events` (code, referred_user_id, status, created_at) under RLS. Credit only after the referred person confirms their own email; no personal data about the referred person goes back to the referrer beyond a count.
 
@@ -167,3 +167,19 @@ The spec says "do not build now, only leave seams". These are the extension poin
 **Publishable key, not the legacy anon key.** `sb_publishable_…` is Supabase's recommended client key and can be rotated independently. The variable is still named `NEXT_PUBLIC_SUPABASE_ANON_KEY` for compatibility.
 
 **Live RLS check.** A rolled-back in-database test with temporary users was declined, so live isolation is verified by `npm run verify:rls` once the service role key is in `.env.local`. The same migrations pass the PGlite RLS suite, and an anonymous read-only probe of the live API returns no rows.
+
+## Quick flow and paid downloads (2026-10-22)
+
+Feedback on the first build: too slow to get to a CV, and the business needs downloads to be paid, matching Real Plannet's MakeMyCV (₹199 including GST). Prototyped in Claude Design first, then built.
+
+**One screen to start.** `/` takes a CV (upload, paste, or saved facts) and a job ad (paste, upload, or clipboard) and runs import → JD analysis → match → tailor in the browser (`lib/quick/run.ts`). It tries AI and falls back to the basic method for the rest of the run if AI is off or failing, so it always finishes.
+
+**Truth rules kept, with one tap.** Imported facts are saved unconfirmed; the review screen shows them as the user's for the preview and marks lines the importer wasn't sure of as "check". "Looks right" confirms them. Tailoring changes with flags (new names, job terms, lint) are left pending, never auto-applied. At most one gap question is asked (a tool the job names that isn't in the CV); "Yes" adds a skill fact, "No" adds nothing.
+
+**Paid per CV, server-enforced.** A file download now sends only `cv_id`; the server loads the CV under the user's RLS session and needs a `purchases` row with `status = 'paid'` (402 otherwise). The old shape (client sends CV content, gets a file) is rejected. Page-count measuring stays free and returns no file. The data export still includes every CV in `data.json` (it's the user's data), but Word files only for paid CVs.
+
+**Razorpay over plain REST** (`lib/pay/razorpay.ts`), WebCrypto HMAC with constant-time compare, so it runs on Workers without the Node SDK. The amount comes from `config/pricing.ts`, never the browser. Purchases are written only with the service role (no insert/update policies), marked paid by either the checkout signature (`/api/pay/verify`) or a verified webhook, whichever comes first.
+
+**Account needed to pay.** Guests can build and preview; paying asks for sign-in so the purchase survives device changes. A pending checkout is remembered across the magic link; `/auth/finish` then moves the guest's data automatically (ids are preserved) and returns to checkout.
+
+**Tax records survive deletion.** `purchases.user_id` is `on delete set null`, so deleting an account removes the person but keeps the amount, date and order reference that GST law needs.

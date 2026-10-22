@@ -9,7 +9,18 @@ import { cx } from "./ui";
 export type LineTarget = { kind: "fact"; factId: string; text: string } | { kind: "summary"; text: string };
 
 /** HTML twin of the PDF/DOCX layout. Lines are buttons so they can be edited in place. */
-export function CvPreview({ doc, onSelect, selected }: { doc: RenderedCv; onSelect?: (t: LineTarget) => void; selected?: string | null }) {
+export function CvPreview({
+  doc,
+  onSelect,
+  selected,
+  flagged,
+}: {
+  doc: RenderedCv;
+  onSelect?: (t: LineTarget) => void;
+  selected?: string | null;
+  /** Fact ids to mark "check": lines we read from an upload but aren't sure of. */
+  flagged?: ReadonlySet<string>;
+}) {
   const t = useTranslations("builder");
   const tpl = templates[doc.template_id];
   const font: CSSProperties = { fontFamily: tpl.pdfFont === "Times" ? "'Times New Roman', Times, Georgia, serif" : "Arial, Helvetica, sans-serif" };
@@ -33,11 +44,17 @@ export function CvPreview({ doc, onSelect, selected }: { doc: RenderedCv; onSele
             activate();
           }
         }}
-        className={cx("cursor-pointer rounded hover:bg-yellow-100 focus:bg-yellow-100", selected === id && "bg-yellow-100", className)}
+        className={cx(
+          "cursor-pointer rounded hover:bg-yellow-100 focus:bg-yellow-100",
+          selected === id && "bg-yellow-100",
+          flagged?.has(id) && "underline decoration-yellow-500 decoration-2 underline-offset-2",
+          className,
+        )}
         aria-label={t("editLine", { text: line.text })}
       >
         {line.text}
         {line.overridden && <span className="sr-only"> ({t("editedForCv")})</span>}
+        {flagged?.has(id) && <span className="ms-1 rounded bg-yellow-200 px-1 text-[10px] font-semibold uppercase text-yellow-900">{t("checkLine")}</span>}
       </span>
     );
   };

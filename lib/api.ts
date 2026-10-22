@@ -17,6 +17,9 @@ export type ApiErrorCode =
   | "unsupported_characters"
   | "missing_inputs"
   | "ai_required"
+  | "payment_required"
+  | "payments_not_configured"
+  | "not_found"
   | "not_configured"
   | "server_error";
 

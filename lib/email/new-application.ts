@@ -21,6 +21,7 @@ export function newApplication(cvs: Cv[]): Application {
     gaps: {},
     tailor: null,
     compose: composeInputsSchema.parse({}),
+    quick: null,
     notes: "",
     created_at: ts,
     updated_at: ts,

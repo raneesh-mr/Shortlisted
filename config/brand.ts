@@ -14,9 +14,9 @@ export const brand = {
   contactEmail: "privacy@realplannet.com",
   colors: {
     // Used for the PWA manifest and meta theme-color. UI colours live in CSS tokens.
-    primary: "#1f4d3a",
-    background: "#fbfaf7",
-    backgroundDark: "#121614",
+    primary: "#c9a84c",
+    background: "#f7f3ea",
+    backgroundDark: "#050508",
   },
 } as const;
 

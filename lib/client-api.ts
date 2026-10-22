@@ -43,7 +43,7 @@ export type ErrorKey = keyof typeof messages.errors;
 const knownErrors = new Set<string>([
   "network", "bad_request", "unauthorized", "rate_limited", "too_large", "unsupported_type", "unreadable", "empty",
   "ai_unavailable", "ai_refused", "ai_invalid", "unsupported_characters", "not_configured", "server_error",
-  "missing_inputs", "ai_required",
+  "missing_inputs", "ai_required", "payment_required", "payments_not_configured", "not_found",
 ] satisfies ErrorKey[]);
 
 /** Maps any thrown value to a translatable error key. */

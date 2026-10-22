@@ -37,8 +37,7 @@ Hobbies
 Desert hiking and photography`;
 
 async function startAsGuest(page: Page) {
-  await page.goto("/");
-  await page.getByRole("link", { name: /get started/i }).click();
+  await page.goto("/welcome");
   await page.getByRole("button", { name: /continue without an account/i }).click();
   // Consent is required and never pre-ticked.
   await expect(page.getByText(/please tick the box/i)).toBeVisible();
@@ -94,26 +93,28 @@ test("guest: import a CV, confirm facts, build and export", async ({ page }) => 
   await expect(page.getByText(/within the usual 3/)).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText("Text in the PDF can be selected and read by software.")).toBeVisible();
 
-  const pdfDownload = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Download PDF" }).click();
-  const pdf = await pdfDownload;
-  expect(pdf.suggestedFilename()).toMatch(/\.pdf$/);
+  // Downloads are paid: guests see the price and go to checkout, which needs an account.
+  await expect(page.getByRole("button", { name: "Download PDF" })).toHaveCount(0);
+  await page.getByRole("link", { name: "Get PDF + Word · ₹199" }).click();
+  await expect(page).toHaveURL(/\/quick\/pay\?cv=/);
+  await expect(page.getByRole("heading", { name: "Sign in to keep your CV" })).toBeVisible();
+  await expect(page.getByText("Includes ₹30.36 GST (18%).", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pay ₹199 securely" })).toBeDisabled();
 
-  const docxDownload = page.waitForEvent("download");
-  await page.getByRole("button", { name: /Download Word/ }).click();
-  const docx = await docxDownload;
-  expect(docx.suggestedFilename()).toMatch(/\.docx$/);
+  // The paid file endpoint refuses anyone not signed in.
+  const res = await page.request.post("/api/export/pdf", { data: { mode: "file", cv_id: "6f1c2b8e-4a1d-4c55-9a0e-2f3b4c5d6e7f" } });
+  expect(res.status()).toBe(401);
 
   // Data persists in the browser.
   await page.goto("/cvs");
   await expect(page.getByText("Imported CV")).toBeVisible();
 
-  // Round trip: the files we just exported can be imported again (read on the device).
+  // Our own PDF and Word output can be imported again (read on the device).
   // Each format is read twice to catch parsers that only work once per page.
   const { readFileSync } = await import("node:fs");
   const files = [
-    { name: "cv.pdf", mimeType: "application/pdf", buffer: readFileSync(await pdf.path()) },
-    { name: "cv.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: readFileSync(await docx.path()) },
+    { name: "cv.pdf", mimeType: "application/pdf", buffer: readFileSync("tests/e2e/fixtures/cv.pdf") },
+    { name: "cv.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: readFileSync("tests/e2e/fixtures/cv.docx") },
   ];
   for (const file of [files[0]!, files[0]!, files[1]!, files[1]!]) {
     await page.goto("/cvs/import");
@@ -247,10 +248,8 @@ test("guest: full apply flow (basic mode): analyse, match, tailor, email, track"
   const eml = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download as .eml" }).click();
   expect((await eml).suggestedFilename()).toMatch(/\.eml$/);
-  const pdf = page.waitForEvent("download");
-  // The email uses the tailored CV when one was created, otherwise the imported one.
-  await page.getByRole("button", { name: /Download "(Imported CV|Facilities Manager – Marina Living)" as PDF/ }).click();
-  expect((await pdf).suggestedFilename()).toMatch(/\.pdf$/);
+  // The CV beside the email is a paid download.
+  await expect(page.getByRole("link", { name: "Get this CV as PDF · ₹199" })).toHaveAttribute("href", /\/quick\/pay\?cv=/);
 
   await page.getByRole("button", { name: "I've sent it" }).click();
   await expect(page).toHaveURL(/\/apply$/);
@@ -297,4 +296,51 @@ test("guest: full apply flow (basic mode): analyse, match, tailor, email, track"
   for (const title of ["Asks you to pay", "Recruiter uses a personal email", "Contact only by chat app", "Pay sounds unusually high or easy", "Pushes you to hurry"]) {
     await expect(page.getByText(title, { exact: true })).toBeVisible();
   }
+});
+
+test("quick flow: CV + job ad → tailored CV → review → checkout", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "A CV made for this job, in 60 seconds." })).toBeVisible();
+  await expect(page.getByText("Preview free · ₹199 to download (incl. GST)", { exact: false })).toBeVisible();
+
+  await page.getByRole("button", { name: "No CV? Paste your experience" }).click();
+  await page.getByLabel("Your experience").fill(SAMPLE_CV);
+  await page.getByLabel("Job ad").fill(JOB_AD);
+
+  // Consent is asked once, never pre-ticked.
+  await page.getByRole("button", { name: "Build my CV →" }).click();
+  await expect(page.getByText(/please tick the box/i)).toBeVisible();
+  await page.getByRole("checkbox", { name: /i agree that/i }).check();
+  await page.getByRole("button", { name: "Build my CV →" }).click();
+
+  // No AI key in tests: the basic method stands in, end to end.
+  await expect(page).toHaveURL(/\/quick\/review\?app=/, { timeout: 30_000 });
+  await expect(page.getByText("job keywords shown by your real experience")).toBeVisible();
+  const preview = page.getByRole("article", { name: "CV preview" });
+  await expect(preview.getByText("Amira Haddad")).toBeVisible();
+  await expect(preview.getByText("Cut reactive maintenance calls by 18% in 12 months")).toBeVisible();
+
+  // A gap is asked about, never assumed.
+  const question = page.getByText(/The job asks for .+\. Have you used it\?/);
+  if (await question.isVisible()) {
+    await page.getByRole("button", { name: "No, I haven't" }).click();
+  }
+
+  // Inline edit, then a template switch.
+  await preview.getByRole("button", { name: /Edit: Run a team of 14/ }).click();
+  await page.getByRole("dialog").getByRole("textbox").fill("Lead 14 technicians across 3 towers");
+  await page.getByRole("dialog").getByRole("button", { name: "Save" }).click();
+  await expect(preview.getByText("Lead 14 technicians across 3 towers")).toBeVisible();
+  await page.getByRole("radio", { name: "Classic" }).click();
+  await expect(page.getByRole("radio", { name: "Classic" })).toHaveAttribute("aria-checked", "true");
+
+  await page.getByRole("button", { name: "Looks right · Get it for ₹199 →" }).click();
+  await expect(page).toHaveURL(/\/quick\/pay\?cv=/);
+  await expect(page.getByRole("heading", { name: "Almost there." })).toBeVisible();
+  await expect(page.getByText("Tailored CV · PDF + Word")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Pay ₹199 securely" })).toBeDisabled();
+
+  // Reviewing confirmed the imported facts: they're in the guest's vault now.
+  await page.goto("/cvs/facts");
+  await expect(page.getByText("Cut reactive maintenance calls by 18% in 12 months")).toBeVisible();
 });

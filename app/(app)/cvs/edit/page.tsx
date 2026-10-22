@@ -8,10 +8,12 @@ import { personalFields, sectionIds, spellings, type PersonalField, type Section
 import { useApp } from "@/components/app-provider";
 import { CvPreview, type LineTarget } from "@/components/cv-preview";
 import { CountrySelect, RegionSummary } from "@/components/region";
-import { Button, Card, Notice, PageHeader, Select, Spinner, Switch, TextArea, TextInput, cx } from "@/components/ui";
+import { Button, Card, LinkButton, Notice, PageHeader, Select, Spinner, Switch, TextArea, TextInput, cx } from "@/components/ui";
 import { track } from "@/lib/analytics";
 import { runAtsCheck } from "@/lib/ats/check";
-import { ApiClientError, apiFetch, downloadBlob, errorKey, safeFilename } from "@/lib/client-api";
+import { ApiClientError, apiFetch, errorKey } from "@/lib/client-api";
+import { downloadPaidCv, payHref } from "@/lib/pay/client";
+import { formatMoney, products } from "@/config/pricing";
 import { buildCvDocument, defaultCvContent, effectiveSettings, sectionTitles } from "@/lib/cv/document";
 import { templates } from "@/lib/cv/templates";
 import { templateIds, type Cv, type CvVersion } from "@/lib/model";
@@ -25,7 +27,7 @@ function Builder() {
   const te = useTranslations("errors");
   const params = useSearchParams();
   const router = useRouter();
-  const { cvs, facts, saveCv, saveFacts, repo, online } = useApp();
+  const { cvs, facts, saveCv, saveFacts, repo, online, paidCvIds } = useApp();
   const id = params.get("id");
   const stored = cvs.find((c) => c.id === id) ?? null;
 
@@ -174,12 +176,9 @@ function Builder() {
     setExporting(format);
     setExportError(null);
     try {
-      const res = await apiFetch(`/api/export/${format}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cv, facts, mode: "file" }),
-      });
-      downloadBlob(await res.blob(), `${safeFilename(`${doc!.name || cv!.title} ${doc!.document_name}`)}.${format}`);
+      // The server renders what's saved, so save the latest edits first.
+      await saveCv(cv!);
+      await downloadPaidCv(cv!.id, format, `${doc!.name || cv!.title} ${doc!.document_name}`);
       track({ name: "cv_exported", format });
     } catch (err) {
       const code = errorKey(err);
@@ -409,12 +408,23 @@ function Builder() {
             {!measure && online && <p className="mt-2 text-sm text-ink-2">{t("measuring")}</p>}
           </Card>
           <div className="grid gap-3">
-            <Button disabled={!online || exporting !== null} onClick={() => exportFile("pdf")}>
-              {exporting === "pdf" ? t("exporting") : t("downloadPdf")}
-            </Button>
-            <Button variant="secondary" disabled={!online || exporting !== null} onClick={() => exportFile("docx")}>
-              {exporting === "docx" ? t("exporting") : t("downloadDocx")}
-            </Button>
+            {paidCvIds.has(cv.id) ? (
+              <>
+                <Button disabled={!online || exporting !== null} onClick={() => exportFile("pdf")}>
+                  {exporting === "pdf" ? t("exporting") : t("downloadPdf")}
+                </Button>
+                <Button variant="secondary" disabled={!online || exporting !== null} onClick={() => exportFile("docx")}>
+                  {exporting === "docx" ? t("exporting") : t("downloadDocx")}
+                </Button>
+              </>
+            ) : (
+              <>
+                <LinkButton href={payHref(cv.id)} onClick={() => void saveCv(cv)}>
+                  {t("getFiles", { price: formatMoney(products.cv_download.amount) })}
+                </LinkButton>
+                <p className="text-sm text-ink-2">{t("getFilesHint")}</p>
+              </>
+            )}
             {!online && <p className="text-sm text-ink-2">{t("exportOffline")}</p>}
             {exportError && <Notice tone="danger">{exportError}</Notice>}
           </div>

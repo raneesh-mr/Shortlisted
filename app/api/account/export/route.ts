@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { allow, apiError, zodError } from "@/lib/api";
 import { buildExportZip } from "@/lib/export/bundle";
+import { paidCvIds } from "@/lib/pay/entitlement";
 import {
   applicationSchema,
   consentSchema,
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
       emails: parse(emailRecordSchema, rows.emails),
       audit: rows.audit,
       raw_rows: rows,
-    });
+    }, await paidCvIds(supabase));
     await supabase.from("audit").insert({ user_id: userId, event: "account.exported", metadata: {} });
     return zipResponse(zip);
   }

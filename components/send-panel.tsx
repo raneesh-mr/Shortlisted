@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { apiFetch, downloadBlob, errorKey, safeFilename } from "@/lib/client-api";
+import { formatMoney, products } from "@/config/pricing";
+import { downloadBlob, errorKey, safeFilename } from "@/lib/client-api";
+import { downloadPaidCv, payHref } from "@/lib/pay/client";
 import { MAILTO_SOFT_LIMIT, buildEml, mailtoHref } from "@/lib/email/send";
-import type { Cv, Fact } from "@/lib/model";
-import { Button, Card, Checkbox, Notice, cx } from "./ui";
+import type { Cv } from "@/lib/model";
+import { Button, Card, Checkbox, LinkButton, Notice, cx } from "./ui";
 
 /** Copy / open in mail app / .eml, plus the attach-your-CV reminder. We never send email ourselves. */
 export function SendPanel({
@@ -13,7 +15,7 @@ export function SendPanel({
   subject,
   body,
   cv,
-  facts,
+  paid,
   online,
   onSent,
 }: {
@@ -21,7 +23,8 @@ export function SendPanel({
   subject: string;
   body: string;
   cv: Cv | null;
-  facts: Fact[];
+  /** Whether this CV's files have been paid for. */
+  paid: boolean;
   online: boolean;
   onSent: () => void;
 }) {
@@ -48,12 +51,7 @@ export function SendPanel({
     setPdfBusy(true);
     setError(null);
     try {
-      const res = await apiFetch("/api/export/pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cv, facts, mode: "file" }),
-      });
-      downloadBlob(await res.blob(), `${safeFilename(cv.title)}.pdf`);
+      await downloadPaidCv(cv.id, "pdf", cv.title);
     } catch (err) {
       setError(te(errorKey(err)));
     } finally {
@@ -69,7 +67,11 @@ export function SendPanel({
       <div className="rounded-xl border border-warn bg-warn-soft p-3">
         <Checkbox checked={attached} onChange={setAttached} label={<span className="font-semibold">{t("attachReminder")}</span>} />
         <p className="mt-1 text-sm text-ink-2">{t("attachWhy")}</p>
-        {cv ? (
+        {cv && !paid ? (
+          <LinkButton variant="secondary" className="mt-2 w-full" href={payHref(cv.id)}>
+            {t("getCvPdf", { price: formatMoney(products.cv_download.amount) })}
+          </LinkButton>
+        ) : cv ? (
           <Button variant="secondary" className="mt-2 w-full" disabled={pdfBusy || !online} onClick={downloadPdf}>
             {pdfBusy ? t("preparing") : t("downloadCvPdf", { title: cv.title })}
           </Button>

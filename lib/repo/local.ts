@@ -108,6 +108,10 @@ export class LocalRepo implements Repo {
     await this.write("emails", [{ ...email, updated_at: nowIso() }, ...rest]);
   }
 
+  async listPurchases() {
+    return [];
+  }
+
   async exportAll(): Promise<DataBundle> {
     const cvs = await this.listCvs();
     const versions = (await Promise.all(cvs.map((c) => this.listVersions(c.id)))).flat();

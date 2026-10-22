@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { brand } from "@/config/brand";
 import { dueReminders } from "@/lib/tracker/reminders";
 import { useApp } from "./app-provider";
+import { BrandMark } from "./brand-mark";
 import { Notice, Spinner, cx } from "./ui";
 
 const tabs = [
@@ -71,9 +71,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {t("skipToContent")}
       </a>
       <header className="mx-auto flex w-full max-w-xl items-center justify-between px-4 pt-4">
-        <Link href="/home" className="font-semibold text-accent">
-          {brand.name}
-        </Link>
+        <BrandMark href="/home" />
         {repo?.kind === "guest" && (
           <Link href="/me" className="rounded-full bg-surface-2 px-3 py-1 text-xs text-ink-2">
             {t("guestBadge")}

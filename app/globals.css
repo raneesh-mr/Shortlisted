@@ -1,66 +1,53 @@
 @import "tailwindcss";
 
-/* Design tokens. Light by default, dark via system preference or data-theme. */
+/*
+ * Design tokens, matching Real Plannet's MakeMyCV: near-black ground, gold
+ * accent, DM Sans body, Cormorant Garamond display. Dark is the brand
+ * default; a light (cream) theme is available in Me → Appearance.
+ */
 :root {
-  --bg: #fbfaf7;
-  --surface: #ffffff;
-  --surface-2: #f2f0ea;
-  --ink: #16191a;
-  --ink-2: #4a5052;
-  --line: #d9d6cd;
-  --accent: #1f4d3a;
-  --accent-ink: #ffffff;
-  --accent-soft: #e3eee8;
-  --warn: #8a5300;
-  --warn-soft: #fbf0dc;
-  --danger: #a3261b;
-  --danger-soft: #fbe5e2;
-  --ok: #1f6a3c;
-  --ok-soft: #e1f2e6;
-  --focus: #2563eb;
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #121614;
-    --surface: #1a1f1d;
-    --surface-2: #232a27;
-    --ink: #eef1ee;
-    --ink-2: #b5bdb8;
-    --line: #36403b;
-    --accent: #7fc8a3;
-    --accent-ink: #0c1a13;
-    --accent-soft: #1f3329;
-    --warn: #f2c46d;
-    --warn-soft: #3a2e15;
-    --danger: #ff9b8f;
-    --danger-soft: #3d1d19;
-    --ok: #8fd8a8;
-    --ok-soft: #1b3324;
-    --focus: #93b4ff;
-    color-scheme: dark;
-  }
-}
-
-:root[data-theme="dark"] {
-  --bg: #121614;
-  --surface: #1a1f1d;
-  --surface-2: #232a27;
-  --ink: #eef1ee;
-  --ink-2: #b5bdb8;
-  --line: #36403b;
-  --accent: #7fc8a3;
-  --accent-ink: #0c1a13;
-  --accent-soft: #1f3329;
+  --bg: #050508;
+  --surface: #12121a;
+  --surface-2: #1a1a24;
+  --ink: #e8e4dc;
+  --ink-strong: #f5f4f0;
+  --ink-2: #a39e93;
+  --line: #2a2a35;
+  --accent: #c9a84c;
+  --accent-strong: #e0c06e;
+  --accent-ink: #120e04;
+  --accent-soft: #2a2415;
+  --gold-gradient: linear-gradient(100deg, #e8c97a, #c9a84c 60%, #a8842f);
   --warn: #f2c46d;
   --warn-soft: #3a2e15;
   --danger: #ff9b8f;
   --danger-soft: #3d1d19;
   --ok: #8fd8a8;
   --ok-soft: #1b3324;
-  --focus: #93b4ff;
+  --focus: #e0c06e;
   color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f7f3ea;
+  --surface: #ffffff;
+  --surface-2: #efe9dc;
+  --ink: #16130b;
+  --ink-strong: #0d0b06;
+  --ink-2: #5c574c;
+  --line: #ddd5c4;
+  --accent: #8a6d1f;
+  --accent-strong: #6f5718;
+  --accent-ink: #120e04;
+  --accent-soft: #f3e9cc;
+  --warn: #8a5300;
+  --warn-soft: #fbf0dc;
+  --danger: #a3261b;
+  --danger-soft: #fbe5e2;
+  --ok: #1f6a3c;
+  --ok-soft: #e1f2e6;
+  --focus: #6f5718;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -68,9 +55,11 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-ink: var(--ink);
+  --color-ink-strong: var(--ink-strong);
   --color-ink-2: var(--ink-2);
   --color-line: var(--line);
   --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
   --color-warn: var(--warn);
@@ -79,7 +68,8 @@
   --color-danger-soft: var(--danger-soft);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-dm-sans), "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-cormorant), Georgia, serif;
 }
 
 html {
@@ -96,6 +86,15 @@ body {
   outline: 3px solid var(--focus);
   outline-offset: 2px;
   border-radius: 6px;
+}
+
+/* The brand's gold pill. */
+.btn-gold {
+  background: var(--gold-gradient);
+  color: var(--accent-ink);
+}
+.btn-gold:hover {
+  filter: brightness(1.05);
 }
 
 @media (prefers-reduced-motion: reduce) {

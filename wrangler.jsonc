@@ -10,6 +10,7 @@
   },
   "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "shortlisted" }],
   // Served on the Real Plannet zone. The zone must be in the same Cloudflare account.
+  "workers_dev": true,
   "routes": [{ "pattern": "shortlisted.realplannet.com", "custom_domain": true }],
   // Non-secret settings. Secrets (ANTHROPIC_API_KEY, SUPABASE_SERVICE_ROLE_KEY) are set
   // with `wrangler secret put`, never here. NEXT_PUBLIC_* values are baked in at build

@@ -125,6 +125,20 @@ describe("row level security", () => {
     expect((await as(A, () => db.query(`select * from public.emails`))).rows).toHaveLength(1);
   });
 
+  it("purchases are read-only for users and private to their owner", async () => {
+    const cv = await as(A, () => db.query<{ id: string }>(`insert into public.cvs (title, region_id, template_id, content) values ('Paid CV', 'uk', 'modern', '{}') returning id`));
+    // Only the server (superuser here, service role in production) records a payment.
+    await db.query(`insert into public.purchases (user_id, cv_id, sku, amount, order_id, status) values ($1, $2, 'cv_download', 19900, 'order_test_1', 'paid')`, [A, cv.rows[0]!.id]);
+    expect((await as(A, () => db.query(`select * from public.purchases`))).rows).toHaveLength(1);
+    expect((await as(B, () => db.query(`select * from public.purchases`))).rows).toHaveLength(0);
+    // A user can't grant themselves a purchase, or mark one paid.
+    await expect(
+      as(B, () => db.query(`insert into public.purchases (user_id, sku, amount, order_id, status) values ($1, 'cv_download', 1, 'order_fake', 'paid')`, [B])),
+    ).rejects.toThrow(/row-level security/);
+    const upd = await as(A, () => db.query(`update public.purchases set status = 'refunded'`));
+    expect(upd.affectedRows).toBe(0);
+  });
+
   it("consents are append-only for users", async () => {
     await as(A, () => db.query(`insert into public.consents (purpose, text_version, granted) values ('core', 'v1', true)`));
     const upd = await as(A, () => db.query(`update public.consents set granted = false`));

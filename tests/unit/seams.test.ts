@@ -2,7 +2,6 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { features } from "@/config/features";
-import { plans } from "@/lib/payments/types";
 
 function files(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
@@ -16,9 +15,7 @@ function files(dir: string, out: string[] = []): string[] {
 describe("Phase 5 seams", () => {
   it("keeps unbuilt features off", () => {
     expect(features.referrals).toBe(false);
-    expect(features.payments).toBe(false);
     expect(features.analytics).toBe(false);
-    expect(plans).toEqual([]);
   });
 
   // ms-/me-/ps-/pe-/start-/end-/text-start keep Arabic (RTL) working without rework.

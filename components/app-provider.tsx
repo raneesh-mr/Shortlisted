@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { brand } from "@/config/brand";
 import { GEO_COOKIE } from "@/lib/geo";
-import type { Application, Cv, Fact, Profile } from "@/lib/model";
+import type { Application, Cv, Fact, Profile, Purchase } from "@/lib/model";
 import { LocalRepo } from "@/lib/repo/local";
 import { RemoteRepo } from "@/lib/repo/remote";
 import type { Repo } from "@/lib/repo/types";
@@ -20,6 +20,10 @@ interface AppState {
   facts: Fact[];
   cvs: Cv[];
   applications: Application[];
+  purchases: Purchase[];
+  /** CVs with a paid download. */
+  paidCvIds: Set<string>;
+  refreshPurchases(): Promise<void>;
   stale: boolean;
   online: boolean;
   detectedCountry: string | null;
@@ -58,18 +62,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [facts, setFacts] = useState<Fact[]>([]);
   const [cvs, setCvs] = useState<Cv[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [stale, setStale] = useState(false);
   const [online, setOnline] = useState(true);
   const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
   const lastSnapshot = useRef(new Map<string, number>());
+  // The active repo, readable by callbacks created before a session started
+  // (e.g. a flow that starts a guest session and then saves straight away).
+  const repoRef = useRef<Repo | null>(null);
 
   const load = useCallback(async (r: Repo) => {
     setStale(false);
-    const [p, f, c, a] = await Promise.all([r.getProfile(), r.listFacts(), r.listCvs(), r.listApplications()]);
+    const [p, f, c, a, pu] = await Promise.all([r.getProfile(), r.listFacts(), r.listCvs(), r.listApplications(), r.listPurchases().catch(() => [])]);
     setProfile(p);
     setFacts(f);
     setCvs(c);
     setApplications(a);
+    setPurchases(pu);
+    repoRef.current = r;
     setRepo(r);
     setStatus("ready");
   }, []);
@@ -90,11 +100,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await load(new LocalRepo());
       return;
     }
+    repoRef.current = null;
     setRepo(null);
     setProfile(null);
     setFacts([]);
     setCvs([]);
     setApplications([]);
+    setPurchases([]);
     setStatus("signed_out");
   }, [load]);
 
@@ -129,9 +141,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [init]);
 
   const need = useCallback(() => {
-    if (!repo) throw new Error("No active session");
-    return repo;
-  }, [repo]);
+    if (!repoRef.current) throw new Error("No active session");
+    return repoRef.current;
+  }, []);
 
   const value = useMemo<AppState>(
     () => ({
@@ -142,6 +154,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       facts,
       cvs,
       applications,
+      purchases,
+      paidCvIds: new Set(purchases.filter((p) => p.status === "paid" && p.cv_id).map((p) => p.cv_id!)),
+      async refreshPurchases() {
+        if (repoRef.current) setPurchases(await repoRef.current.listPurchases());
+      },
       stale,
       online,
       detectedCountry,
@@ -201,7 +218,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setApplications((prev) => prev.filter((a) => a.id !== id));
       },
     }),
-    [status, repo, user, profile, facts, cvs, applications, stale, online, detectedCountry, init, load, need],
+    [status, repo, user, profile, facts, cvs, applications, purchases, stale, online, detectedCountry, init, load, need],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

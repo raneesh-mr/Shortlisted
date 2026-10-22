@@ -10,6 +10,7 @@ import { Button, Checkbox, Notice, Spinner } from "@/components/ui";
 import { consentRecord, currentConsents, takePendingConsent } from "@/lib/consent";
 import { LocalRepo } from "@/lib/repo/local";
 import { RemoteRepo } from "@/lib/repo/remote";
+import { PENDING_CHECKOUT, payHref } from "@/lib/pay/client";
 
 type Step = "working" | "consent" | "migrate" | "error";
 
@@ -25,14 +26,23 @@ export default function FinishSignIn() {
   const done = async () => {
     localStorage.removeItem(GUEST_FLAG);
     await reload();
+    // Signed in to pay for a CV: go straight back to checkout.
+    const pendingCv = localStorage.getItem(PENDING_CHECKOUT);
+    if (pendingCv) {
+      localStorage.removeItem(PENDING_CHECKOUT);
+      router.replace(payHref(pendingCv));
+      return;
+    }
     const remote = repo as RemoteRepo;
     const profile = await remote.getProfile();
     router.replace(profile.onboarded ? "/home" : "/onboarding");
   };
 
   const checkGuestData = async () => {
-    if (await new LocalRepo().hasData()) setStep("migrate");
-    else await done();
+    if (!(await new LocalRepo().hasData())) await done();
+    // Paying for a CV made as a guest: it has to move to the account to be paid for.
+    else if (localStorage.getItem(PENDING_CHECKOUT)) await migrate(true);
+    else setStep("migrate");
   };
 
   useEffect(() => {

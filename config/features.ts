@@ -7,8 +7,8 @@ export const features = {
   careerSnapshotUrl: process.env.NEXT_PUBLIC_CAREER_BLUEPRINT_URL || "",
   /** Referral credits: not built. See DECISIONS.md, "Phase 5 seams". */
   referrals: false,
-  /** Paid extras (Razorpay): not built. See lib/payments/types.ts. */
-  payments: false,
+  /** Paid CV downloads (Razorpay). Live; see lib/pay and config/pricing.ts. */
+  payments: true,
   /** Privacy-safe, aggregated analytics: not built. See lib/analytics.ts. */
   analytics: false,
 } as const;

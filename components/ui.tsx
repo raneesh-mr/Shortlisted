@@ -7,13 +7,13 @@ const cx = (...parts: (string | false | null | undefined)[]) => parts.filter(Boo
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 const variants: Record<Variant, string> = {
-  primary: "bg-accent text-accent-ink hover:opacity-90",
-  secondary: "bg-surface text-ink border border-line hover:bg-surface-2",
+  primary: "btn-gold",
+  secondary: "border border-line bg-transparent text-ink hover:border-accent hover:text-accent-strong",
   ghost: "text-ink hover:bg-surface-2",
-  danger: "bg-danger text-white hover:opacity-90",
+  danger: "bg-danger text-bg hover:opacity-90",
 };
 const base =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-base font-medium transition disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-base font-medium transition disabled:cursor-not-allowed disabled:opacity-50";
 
 export function Button({ variant = "primary", className, ...props }: ComponentProps<"button"> & { variant?: Variant }) {
   return <button type="button" className={cx(base, variants[variant], className)} {...props} />;
@@ -31,7 +31,7 @@ export function PageHeader({ title, subtitle, action }: { title: string; subtitl
   return (
     <div className="mb-4 flex items-start justify-between gap-3">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        <h1 className="text-3xl font-light tracking-tight text-ink-strong">{title}</h1>
         {subtitle && <p className="mt-1 text-ink-2">{subtitle}</p>}
       </div>
       {action}

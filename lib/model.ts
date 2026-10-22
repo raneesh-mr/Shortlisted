@@ -247,6 +247,15 @@ export const applicationSchema = z.object({
     .nullable()
     .default(null),
   compose: composeInputsSchema,
+  /** Quick flow: facts imported for this application, and the ones the user should check. */
+  quick: z
+    .object({
+      fact_ids: z.array(z.string()),
+      check_ids: z.array(z.string()),
+      reviewed: z.boolean(),
+    })
+    .nullable()
+    .default(null),
   notes: z.string().max(4000).default(""),
   created_at: z.string(),
   updated_at: z.string(),
@@ -284,6 +293,20 @@ export const emailRecordSchema = z.object({
   updated_at: z.string(),
 });
 export type EmailRecord = z.infer<typeof emailRecordSchema>;
+
+/* ---------- Purchases (written only by the server) ---------- */
+
+export const purchaseSchema = z.object({
+  id: z.string().uuid(),
+  cv_id: z.string().uuid().nullable(),
+  sku: z.string(),
+  amount: z.number().int(),
+  currency: z.string(),
+  status: z.enum(["created", "paid", "failed", "refunded"]),
+  paid_at: z.string().nullable(),
+  created_at: z.string(),
+});
+export type Purchase = z.infer<typeof purchaseSchema>;
 
 /* ---------- Helpers ---------- */
 

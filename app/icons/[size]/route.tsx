@@ -20,8 +20,8 @@ export async function GET(_req: Request, ctx: RouteContext<"/icons/[size]">) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: brand.colors.primary,
-          color: "#ffffff",
+          background: brand.colors.backgroundDark,
+          color: brand.colors.primary,
           fontSize: size * 0.55,
           fontWeight: 700,
         }}

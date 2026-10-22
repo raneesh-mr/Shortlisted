@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist } from "next/font/google";
+import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { brand } from "@/config/brand";
 import { defaultLocale, dirFor } from "@/i18n/config";
@@ -7,7 +7,8 @@ import { AppProvider } from "@/components/app-provider";
 import { ServiceWorker } from "@/components/service-worker";
 import "./globals.css";
 
-const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"], display: "swap" });
+const dmSans = DM_Sans({ variable: "--font-dm-sans", subsets: ["latin"], weight: ["300", "400", "500", "600"], display: "swap" });
+const cormorant = Cormorant_Garamond({ variable: "--font-cormorant", subsets: ["latin"], weight: ["500", "600"], display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(brand.appUrl),
@@ -22,8 +23,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: brand.colors.background },
-    { media: "(prefers-color-scheme: dark)", color: brand.colors.backgroundDark },
+    { color: brand.colors.backgroundDark },
   ],
 };
 
@@ -33,7 +33,7 @@ const themeScript = `try{var t=localStorage.getItem("${brand.slug}_theme");if(t=
 export default function RootLayout({ children }: LayoutProps<"/">) {
   const locale = defaultLocale;
   return (
-    <html lang={locale} dir={dirFor(locale)} className={`${geist.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang={locale} dir={dirFor(locale)} className={`${dmSans.variable} ${cormorant.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

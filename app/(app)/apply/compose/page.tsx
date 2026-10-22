@@ -85,7 +85,7 @@ function Composer() {
   const te = useTranslations("errors");
   const params = useSearchParams();
   const router = useRouter();
-  const { applications, cvs, facts, profile, repo, online, saveApplication, saveFacts, saveCv } = useApp();
+  const { applications, cvs, facts, profile, repo, online, saveApplication, saveFacts, saveCv, paidCvIds } = useApp();
   const id = params.get("id");
   const stored = applications.find((a) => a.id === id) ?? null;
 
@@ -604,7 +604,7 @@ function Composer() {
             subject={draft.subject}
             body={bodyText(draft.paragraphs)}
             cv={cv}
-            facts={facts}
+            paid={cv ? paidCvIds.has(cv.id) : false}
             online={online}
             onSent={async () => {
               // Save now: the debounced saves would be cancelled by navigating away.

@@ -1,4 +1,4 @@
-import type { Application, Consent, Cv, CvVersion, EmailRecord, Fact, Profile } from "@/lib/model";
+import type { Application, Consent, Cv, CvVersion, EmailRecord, Fact, Profile, Purchase } from "@/lib/model";
 
 export interface DataBundle {
   profile: Profile;
@@ -33,6 +33,8 @@ export interface Repo {
   deleteApplication(id: string): Promise<void>;
   listEmails(applicationId: string): Promise<EmailRecord[]>;
   saveEmail(email: EmailRecord): Promise<void>;
+  /** Paid downloads. Guests never have any (paying requires an account). */
+  listPurchases(): Promise<Purchase[]>;
   exportAll(): Promise<DataBundle>;
 }
 

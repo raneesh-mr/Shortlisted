@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { brand } from "@/config/brand";
+import { formatMoney, products } from "@/config/pricing";
 
 export const metadata: Metadata = { title: "Privacy" };
 
@@ -85,6 +86,7 @@ export default function Privacy() {
             <li>Supabase: database and sign-in.</li>
             <li>Cloudflare: hosting.</li>
             <li>Anthropic: AI processing, only when you use an AI feature.</li>
+            <li>Razorpay: card, UPI and net-banking payments. We never see or store your card or bank details.</li>
           </ul>
           <p className="mt-2">Data may be processed outside your country under standard contractual safeguards.</p>
         </section>
@@ -92,8 +94,8 @@ export default function Privacy() {
         <section>
           <h2>Your rights</h2>
           <ul>
-            <li>Access and portability: Me → Privacy → Export my data (JSON plus your CVs as Word files).</li>
-            <li>Erasure: Me → Privacy → Delete my account. This is a hard delete of your rows and files and cannot be undone.</li>
+            <li>Access and portability: Me → Privacy → Export my data (JSON with everything, plus Word files of the CVs you&apos;ve paid for).</li>
+            <li>Erasure: Me → Privacy → Delete my account. This is a hard delete of your rows and files and cannot be undone. Payment records (amount, date, order reference) are kept without your name or account, because tax law requires it.</li>
             <li>Correction: edit any fact or CV directly.</li>
             <li>Withdraw optional consents (email updates, WhatsApp) any time in Me → Privacy.</li>
             <li>You can complain to your local data protection authority.</li>
@@ -111,6 +113,29 @@ export default function Privacy() {
             We use your approximate country (from your connection or browser language) only to suggest a CV style. It&apos;s a suggestion you can
             change, and we don&apos;t store your IP address.
           </p>
+        </section>
+
+        <section id="refunds">
+          <h2>Payments and refunds</h2>
+          <p>
+            Building and previewing a CV is free. Downloading a finished CV (PDF and Word) costs {formatMoney(products.cv_download.amount)} per CV, including 18% GST.
+            You pay once per CV and can edit it and download it again as often as you like.
+          </p>
+          <p className="mt-2">
+            If a download fails or the file is broken and we can&apos;t fix it, email <a className="underline" href={`mailto:${brand.contactEmail}`}>{brand.contactEmail}</a> within
+            7 days of paying and we&apos;ll refund you in full to the original payment method (usually 5–7 working days). If you were charged twice for the same CV, we refund the
+            extra payment automatically when we spot it, or as soon as you tell us.
+          </p>
+        </section>
+
+        <section id="terms">
+          <h2>Terms</h2>
+          <ul>
+            <li>Your CV must describe your own, real experience. We help with wording and layout; you are responsible for what it says.</li>
+            <li>We don&apos;t promise interviews or jobs.</li>
+            <li>Don&apos;t use {name} to send spam or to apply in someone else&apos;s name.</li>
+            <li>The service is provided by {brand.parent.name}, India. These terms are governed by Indian law.</li>
+          </ul>
         </section>
       </div>
     </main>
